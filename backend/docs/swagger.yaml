@@ -1,0 +1,985 @@
+basePath: /
+definitions:
+  models.AIAnalysis:
+    description: AI生成的综合分析报告
+    properties:
+      availability_findings:
+        description: 分维度发现
+        example:
+        - 所有链接均可正常访问
+        items:
+          type: string
+        type: array
+      availability_score:
+        description: 各维度评分（0-100），越高代表越好
+        example: 95
+        type: integer
+      highlights:
+        description: 关键发现列表（跨维度）
+        example:
+        - 网站加载速度较快
+        - SSL证书配置正确
+        items:
+          type: string
+        type: array
+      performance_findings:
+        description: 性能方面的发现
+        example:
+        - LCP时间略高
+        - 建议优化图片加载
+        items:
+          type: string
+        type: array
+      performance_score:
+        description: 性能评分（响应时间等）
+        example: 80
+        type: integer
+      recommendations:
+        description: 综合建议与优化措施
+        example:
+        - 建议添加CSP安全头
+        - 优化图片加载速度
+        items:
+          type: string
+        type: array
+      risk_level:
+        description: 整体风险等级：高 / 中 / 低
+        enum:
+        - 高
+        - 中
+        - 低
+        example: 中
+        type: string
+      security_findings:
+        description: 安全方面的发现
+        example:
+        - 缺少CSP安全头
+        items:
+          type: string
+        type: array
+      security_score:
+        description: 安全评分（证书、安全头等）
+        example: 75
+        type: integer
+      seo_findings:
+        description: SEO 方面的发现
+        example:
+        - 元信息完整
+        - robots.txt配置正确
+        items:
+          type: string
+        type: array
+      seo_score:
+        description: SEO 评分（元信息、robots 等）
+        example: 90
+        type: integer
+      summary:
+        description: 总结性描述（自然语言）
+        example: 网站整体表现良好，但存在一些性能和安全优化空间
+        type: string
+    type: object
+  models.AccessibilityInfo:
+    description: Lighthouse可访问性检测结果
+    properties:
+      findings:
+        description: 主要发现项
+        example:
+        - Images missing alt text
+        items:
+          type: string
+        type: array
+      score:
+        description: 可访问性评分 (0-100)
+        example: 88
+        type: integer
+    type: object
+  models.CreateTaskRequest:
+    description: 创建扫描任务的请求参数
+    properties:
+      ai_mode:
+        default: balanced
+        description: AI分析模式
+        enum:
+        - performance
+        - security
+        - seo
+        - balanced
+        example: balanced
+        type: string
+      language:
+        default: zh
+        description: 语言 (zh/en)
+        enum:
+        - zh
+        - en
+        example: zh
+        type: string
+      options:
+        description: 扫描选项
+        example:
+        - website-info
+        - domain-info
+        items:
+          type: string
+        type: array
+      url:
+        description: 目标URL
+        example: https://example.com
+        type: string
+    type: object
+  models.CreateTaskResponse:
+    description: 创建任务成功后的响应
+    properties:
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.TaskStatus'
+        enum:
+        - pending
+        - running
+        - completed
+        - failed
+        example: pending
+    type: object
+  models.DomainInfo:
+    description: 域名DNS和地理位置信息
+    properties:
+      asn:
+        description: ASN信息
+        example: AS15133
+        type: string
+      asn_name:
+        description: ASN名称
+        example: Edgecast Inc.
+        type: string
+      city:
+        description: 城市
+        example: New York
+        type: string
+      country:
+        description: 国家
+        example: US
+        type: string
+      domain:
+        example: example.com
+        type: string
+      ip:
+        example: 93.184.216.34
+        type: string
+      ipv4:
+        example:
+        - 93.184.216.34
+        items:
+          type: string
+        type: array
+      ipv6:
+        example:
+        - 2606:2800:220:1:248:1893:25c8:1946
+        items:
+          type: string
+        type: array
+      isp:
+        description: ISP
+        example: Edgecast Inc.
+        type: string
+      mx:
+        description: MX记录
+        example:
+        - mail.example.com
+        items:
+          type: string
+        type: array
+      ns:
+        description: NS记录
+        example:
+        - ns1.example.com
+        items:
+          type: string
+        type: array
+      organization:
+        description: 组织
+        example: Example Inc.
+        type: string
+      txt:
+        description: TXT记录
+        example:
+        - v=spf1 include:_spf.example.com ~all
+        items:
+          type: string
+        type: array
+    type: object
+  models.HttpxResult:
+    description: httpx检测的单个URL结果
+    properties:
+      cdn:
+        example: false
+        type: boolean
+      ip:
+        example: 93.184.216.34
+        type: string
+      response_time:
+        example: 150
+        type: integer
+      status:
+        example: 200
+        type: integer
+      title:
+        example: Example Domain
+        type: string
+      tls:
+        example: true
+        type: boolean
+      url:
+        example: https://example.com
+        type: string
+    type: object
+  models.ModuleStatus:
+    description: 单个检测模块的执行状态
+    properties:
+      completed_at:
+        description: 完成时间
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      error:
+        description: 错误信息（如果有）
+        example: ""
+        type: string
+      name:
+        description: 模块名称
+        example: website-info
+        type: string
+      progress:
+        allOf:
+        - $ref: '#/definitions/models.TaskProgress'
+        description: 模块进度
+      started_at:
+        description: 开始时间
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.TaskStatus'
+        description: 模块状态
+        enum:
+        - pending
+        - running
+        - completed
+        - failed
+        example: running
+    type: object
+  models.PerformanceMetrics:
+    description: Lighthouse性能检测指标
+    properties:
+      cls:
+        description: Cumulative Layout Shift
+        example: 0.1
+        type: number
+      cls_score:
+        description: CLS 评分
+        example: 95
+        type: integer
+      fcp:
+        description: First Contentful Paint (ms)
+        example: 1200.5
+        type: number
+      fcp_score:
+        description: FCP 评分
+        example: 90
+        type: integer
+      lcp:
+        description: Largest Contentful Paint (ms)
+        example: 2500
+        type: number
+      lcp_element:
+        description: LCP 元素定位
+        example: <img src="hero.jpg">
+        type: string
+      lcp_score:
+        description: LCP 评分
+        example: 85
+        type: integer
+      score:
+        description: 整体性能评分 (0-100)
+        example: 85
+        type: integer
+      speed_index:
+        description: Speed Index (ms)
+        example: 3000
+        type: number
+      speed_index_score:
+        description: Speed Index 评分
+        example: 85
+        type: integer
+      tbt:
+        description: Total Blocking Time (ms)
+        example: 200
+        type: number
+      tbt_score:
+        description: TBT 评分
+        example: 80
+        type: integer
+    type: object
+  models.SEOCompliance:
+    description: Lighthouse SEO检测结果
+    properties:
+      has_canonical:
+        description: 是否有 canonical 标签
+        example: true
+        type: boolean
+      has_description:
+        description: 是否有 Description
+        example: true
+        type: boolean
+      has_robots_txt:
+        description: 是否有 robots.txt
+        example: true
+        type: boolean
+      has_title:
+        description: 是否有 Title
+        example: true
+        type: boolean
+      has_viewport:
+        description: 是否有 Viewport
+        example: true
+        type: boolean
+      indexable:
+        description: 是否可索引
+        example: true
+        type: boolean
+      score:
+        description: SEO 评分 (0-100)
+        example: 90
+        type: integer
+      spa_visibility:
+        description: 'SPA 可见性 (Text Ratio: raw vs rendered)'
+        example: 0.85
+        type: number
+    type: object
+  models.SSLInfo:
+    description: SSL/TLS证书详细信息
+    properties:
+      common_name:
+        description: 通用名称
+        example: example.com
+        type: string
+      country:
+        description: 国家
+        example: US
+        type: string
+      days_remaining:
+        description: 剩余天数
+        example: 90
+        type: integer
+      dns_names:
+        description: SAN域名列表
+        example:
+        - example.com
+        - www.example.com
+        items:
+          type: string
+        type: array
+      is_valid:
+        description: 是否有效
+        example: true
+        type: boolean
+      issuer:
+        description: 颁发者
+        example: CN=Let's Encrypt Authority X3
+        type: string
+      key_size:
+        description: 密钥长度
+        example: 2048
+        type: integer
+      locality:
+        description: 地区
+        example: San Francisco
+        type: string
+      organization:
+        description: 组织
+        example: Example Inc.
+        type: string
+      organization_unit:
+        description: 组织单位
+        example: IT Department
+        type: string
+      province:
+        description: 省份
+        example: CA
+        type: string
+      public_key_alg:
+        description: 公钥算法
+        example: RSA
+        type: string
+      serial_number:
+        description: 序列号
+        example: 1234567890ABCDEF
+        type: string
+      signature_alg:
+        description: 签名算法
+        example: SHA256-RSA
+        type: string
+      subject:
+        description: 主题
+        example: CN=example.com
+        type: string
+      valid_from:
+        description: 有效期开始
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      valid_to:
+        description: 有效期结束
+        example: "2024-04-01T00:00:00Z"
+        type: string
+    type: object
+  models.ScanSummary:
+    description: 扫描任务的统计摘要信息
+    properties:
+      alive:
+        description: 可用 URL 数
+        example: 95
+        type: integer
+      avg_response:
+        description: 平均响应时间（毫秒）
+        example: 150
+        type: integer
+      dead:
+        description: 不可用 URL 数
+        example: 5
+        type: integer
+      timeout:
+        description: 是否发生超时
+        example: false
+        type: boolean
+      total:
+        description: 总 URL 数
+        example: 100
+        type: integer
+    type: object
+  models.SecurityRisk:
+    description: Lighthouse安全检测结果
+    properties:
+      score:
+        description: 安全评分 (0-100)
+        example: 75
+        type: integer
+      script_count:
+        description: 脚本总数
+        example: 10
+        type: integer
+      security_headers:
+        additionalProperties:
+          type: string
+        description: 安全响应头 (CSP, HSTS等)
+        example:
+          Strict-Transport-Security: max-age=31536000
+        type: object
+      third_party_scripts:
+        description: 第三方脚本来源
+        example:
+        - https://cdn.example.com
+        items:
+          type: string
+        type: array
+      vulnerabilities:
+        description: 发现的潜在漏洞
+        example:
+        - Missing CSP header
+        items:
+          type: string
+        type: array
+    type: object
+  models.TaskProgress:
+    description: 任务执行进度信息
+    properties:
+      current:
+        description: 当前进度
+        example: 5
+        type: integer
+      total:
+        description: 总进度
+        example: 10
+        type: integer
+    type: object
+  models.TaskResults:
+    description: 扫描任务的完整结果数据
+    properties:
+      accessibility:
+        $ref: '#/definitions/models.AccessibilityInfo'
+      ai_analysis:
+        allOf:
+        - $ref: '#/definitions/models.AIAnalysis'
+        description: AI 分析
+      domain_info:
+        $ref: '#/definitions/models.DomainInfo'
+      link_health:
+        description: 链接健康检查结果
+        items:
+          $ref: '#/definitions/models.HttpxResult'
+        type: array
+      performance:
+        allOf:
+        - $ref: '#/definitions/models.PerformanceMetrics'
+        description: Lighthouse 相关结果
+      security_risk:
+        $ref: '#/definitions/models.SecurityRisk'
+      seo_compliance:
+        $ref: '#/definitions/models.SEOCompliance'
+      ssl_info:
+        $ref: '#/definitions/models.SSLInfo'
+      summary:
+        allOf:
+        - $ref: '#/definitions/models.ScanSummary'
+        description: 统计信息
+      tech_stack:
+        $ref: '#/definitions/models.TechStack'
+      website_info:
+        allOf:
+        - $ref: '#/definitions/models.WebsiteInfo'
+        description: 基础信息
+    type: object
+  models.TaskStatus:
+    enum:
+    - pending
+    - running
+    - completed
+    - failed
+    type: string
+    x-enum-comments:
+      TaskStatusCompleted: 已完成
+      TaskStatusFailed: 执行失败
+      TaskStatusPending: 等待执行
+      TaskStatusRunning: 执行中
+    x-enum-descriptions:
+    - 等待执行
+    - 执行中
+    - 已完成
+    - 执行失败
+    x-enum-varnames:
+    - TaskStatusPending
+    - TaskStatusRunning
+    - TaskStatusCompleted
+    - TaskStatusFailed
+  models.TaskStatusResponse:
+    description: 任务状态查询响应
+    properties:
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      error:
+        example: ""
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      modules:
+        additionalProperties:
+          $ref: '#/definitions/models.ModuleStatus'
+        type: object
+      progress:
+        $ref: '#/definitions/models.TaskProgress'
+      status:
+        allOf:
+        - $ref: '#/definitions/models.TaskStatus'
+        enum:
+        - pending
+        - running
+        - completed
+        - failed
+        example: running
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+    type: object
+  models.TechStack:
+    description: 网站使用的技术栈和服务器信息
+    properties:
+      analytics:
+        description: 分析工具
+        example:
+        - Google Analytics
+        items:
+          type: string
+        type: array
+      cache:
+        description: 缓存技术
+        example:
+        - Redis
+        items:
+          type: string
+        type: array
+      cdn:
+        description: CDN服务
+        example:
+        - Cloudflare
+        items:
+          type: string
+        type: array
+      cms:
+        description: CMS系统
+        example:
+        - WordPress
+        items:
+          type: string
+        type: array
+      content_length:
+        description: Content-Length
+        example: 12345
+        type: integer
+      content_type:
+        description: Content-Type
+        example: text/html; charset=UTF-8
+        type: string
+      database:
+        description: 数据库
+        example:
+        - MySQL
+        items:
+          type: string
+        type: array
+      etag:
+        description: ETag
+        example: '"abc123"'
+        type: string
+      framework:
+        description: 框架
+        example:
+        - Laravel
+        items:
+          type: string
+        type: array
+      javascript_lib:
+        description: JavaScript库
+        example:
+        - jQuery
+        - React
+        items:
+          type: string
+        type: array
+      language:
+        description: 编程语言
+        example:
+        - PHP
+        - JavaScript
+        items:
+          type: string
+        type: array
+      last_modified:
+        description: Last-Modified
+        example: Mon, 01 Jan 2024 00:00:00 GMT
+        type: string
+      meta_tags:
+        additionalProperties:
+          type: string
+        description: 技术相关元标签（已排除网站信息中的标准标签）
+        example:
+          generator: WordPress
+        type: object
+      os:
+        description: 操作系统
+        example: Linux
+        type: string
+      powered_by:
+        description: X-Powered-By
+        example: PHP/8.1.0
+        type: string
+      security_headers:
+        additionalProperties:
+          type: string
+        description: 安全响应头
+        example:
+          Strict-Transport-Security: max-age=31536000
+        type: object
+      server:
+        description: 服务器信息（从ServerInfo整合）
+        example: nginx/1.20.1
+        type: string
+      technologies:
+        description: 技术栈检测（从httpx和HTML分析）
+        example:
+        - Nginx
+        - PHP
+        items:
+          type: string
+        type: array
+    type: object
+  models.WebsiteInfo:
+    description: 网站基础元信息
+    properties:
+      author:
+        example: Example Author
+        type: string
+      charset:
+        example: UTF-8
+        type: string
+      description:
+        example: This is an example domain
+        type: string
+      generator:
+        example: WordPress
+        type: string
+      keywords:
+        example:
+        - example
+        - domain
+        items:
+          type: string
+        type: array
+      language:
+        example: en
+        type: string
+      robots:
+        example: index, follow
+        type: string
+      title:
+        example: Example Domain
+        type: string
+      viewport:
+        example: width=device-width, initial-scale=1
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@webcheckly.com
+    name: API Support
+  description: WebCheckly 网站检测服务 API 文档
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: WebCheckly API
+  version: "1.0"
+paths:
+  /api/scan:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        使用Server-Sent Events进行实时流式扫描。此接口已废弃，建议使用任务管理API（POST /api/scans）。
+
+        SSE事件类型：
+        - start: 扫描开始
+        - result: 单个链接检测结果
+        - progress: 进度更新
+        - website-info: 网站信息
+        - domain-info: 域名信息
+        - ssl-info: SSL证书信息
+        - tech-stack: 技术栈信息
+        - performance-info: 性能指标
+        - seo-info: SEO合规性
+        - security-info: 安全风险
+        - accessibility-info: 可访问性
+        - ai-analysis: AI分析报告
+        - done: 扫描完成
+        - error: 错误信息
+      parameters:
+      - description: 目标URL
+        in: query
+        name: url
+        required: true
+        type: string
+      - collectionFormat: multi
+        description: 扫描选项
+        in: query
+        items:
+          type: string
+        name: options
+        type: array
+      - default: zh
+        description: 语言
+        enum:
+        - zh
+        - en
+        in: query
+        name: lang
+        type: string
+      - default: balanced
+        description: AI分析模式
+        enum:
+        - performance
+        - security
+        - seo
+        - balanced
+        in: query
+        name: ai_mode
+        type: string
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE事件流（text/event-stream格式）
+          schema:
+            type: string
+        "400":
+          description: 请求参数错误（URL格式错误、私有IP等）
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "429":
+          description: 请求过于频繁（触发限流）
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: 服务繁忙（并发任务数已达上限）
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: SSE扫描接口（降级方案）
+      tags:
+      - 扫描
+  /api/scans:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        创建一个新的网站扫描任务，支持多种检测选项。任务创建后会异步执行，可通过任务ID查询状态和结果。
+
+        支持的扫描选项：
+        - website-info: 网站基础信息（标题、描述、关键词等）
+        - domain-info: 域名DNS信息（IP、MX、NS、TXT记录等）
+        - ssl-info: SSL证书信息（有效期、签名算法等）
+        - tech-stack: 技术栈识别（框架、CMS、CDN等）
+        - link-health: 链接健康检查（检测页面内所有链接的可用性）
+        - performance: 性能检测（Lighthouse性能指标）
+        - seo: SEO合规性检测（Lighthouse SEO指标）
+        - security: 安全风险检测（Lighthouse安全指标）
+        - accessibility: 可访问性检测（Lighthouse A11y指标）
+        - ai-analysis: AI智能分析报告（需要配置DEEPSEEK_API_KEY）
+      parameters:
+      - description: 任务创建请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 任务创建成功，返回任务ID和初始状态
+          schema:
+            $ref: '#/definitions/models.CreateTaskResponse'
+        "400":
+          description: 请求参数错误（URL格式错误、私有IP等）
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 创建扫描任务
+      tags:
+      - 任务管理
+  /api/scans/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 查询指定任务的执行状态和进度信息，包括各模块的执行状态
+      parameters:
+      - description: 任务ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 任务状态
+          schema:
+            $ref: '#/definitions/models.TaskStatusResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 任务不存在
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 获取任务状态
+      tags:
+      - 任务管理
+  /api/scans/{id}/results:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        获取已完成任务的扫描结果数据。只有当任务状态为"completed"时才能获取完整结果。
+        如果任务仍在执行中，将返回202状态码。
+      parameters:
+      - description: 任务ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 任务结果（包含所有检测模块的结果数据）
+          schema:
+            $ref: '#/definitions/models.TaskResults'
+        "202":
+          description: 结果尚未准备好（任务仍在执行中）
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 任务不存在
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 获取任务结果
+      tags:
+      - 任务管理
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: 检查服务是否正常运行，返回服务状态和当前时间戳。此接口不受限流影响，可用于监控服务可用性。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 服务状态正常
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 健康检查
+      tags:
+      - 系统
+schemes:
+- http
+- https
+securityDefinitions:
+  ApiKeyAuth:
+    description: 可选：Bearer token认证（当前版本暂未启用）
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
