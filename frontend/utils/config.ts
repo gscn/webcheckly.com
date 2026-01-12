@@ -1,5 +1,5 @@
 // 应用配置
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api"
 
 // 是否是生产环境
 export const IS_PRODUCTION = process.env.NODE_ENV === "production"

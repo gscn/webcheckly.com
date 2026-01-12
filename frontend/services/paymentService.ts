@@ -1,6 +1,6 @@
 import { authenticatedFetch } from './authService';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // 跳转到Stripe Checkout
 export function redirectToCheckout(checkoutSessionId: string) {

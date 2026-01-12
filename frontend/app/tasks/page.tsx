@@ -19,7 +19,7 @@ interface Task {
   error?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export default function TasksPage() {
   const { user } = useAuth();
