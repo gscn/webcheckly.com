@@ -1,5 +1,4 @@
 import { authenticatedFetch } from './authService';
-import { NORMALIZED_API_BASE_URL } from '@/utils/config';
 
 export interface UserCredits {
   id: string;
@@ -41,7 +40,7 @@ export interface UsageStats {
 // 获取余额
 export async function getCreditsBalance(): Promise<UserCredits | null> {
   try {
-    const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/credits/balance`);
+    const response = await authenticatedFetch('/api/credits/balance');
     if (!response.ok) {
       if (response.status === 401) {
         // 401是正常的（未登录），静默返回null
@@ -62,7 +61,7 @@ export async function getCreditsBalance(): Promise<UserCredits | null> {
 
 // 购买积分
 export async function purchaseCredits(amount: number): Promise<any> {
-  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/credits/purchase`, {
+  const response = await authenticatedFetch('/api/credits/purchase', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -81,7 +80,7 @@ export async function purchaseCredits(amount: number): Promise<any> {
 // 获取使用记录
 export async function getUsageRecords(limit = 20, offset = 0): Promise<UsageRecord[]> {
   const response = await authenticatedFetch(
-    `${NORMALIZED_API_BASE_URL}/api/credits/usage?limit=${limit}&offset=${offset}`
+    `/api/credits/usage?limit=${limit}&offset=${offset}`
   );
   if (!response.ok) {
     throw new Error('Failed to fetch usage records');
@@ -99,7 +98,7 @@ export async function getUsageStats(
   if (endDate) params.append('end_date', endDate);
 
   const response = await authenticatedFetch(
-    `${NORMALIZED_API_BASE_URL}/api/credits/stats?${params.toString()}`
+    `/api/credits/stats?${params.toString()}`
   );
   if (!response.ok) {
     throw new Error('Failed to fetch usage stats');

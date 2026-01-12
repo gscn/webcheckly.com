@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { NORMALIZED_API_BASE_URL } from '@/utils/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
@@ -43,7 +42,7 @@ export default function TasksPage() {
     try {
       const offset = (page - 1) * limit;
       const response = await authenticatedFetch(
-        `${NORMALIZED_API_BASE_URL}/api/tasks?limit=${limit}&offset=${offset}`
+        `/api/tasks?limit=${limit}&offset=${offset}`
       );
       if (!response.ok) {
         if (response.status === 401) {

@@ -55,7 +55,7 @@ export type { TaskResults }
  * 创建扫描任务
  */
 export async function createScanTask(request: CreateTaskRequest): Promise<CreateTaskResponse> {
-  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/scans`, {
+  const response = await authenticatedFetch('/api/scans', {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -80,7 +80,7 @@ export async function createScanTask(request: CreateTaskRequest): Promise<Create
  * 获取任务状态
  */
 export async function getTaskStatus(taskId: string): Promise<TaskStatusResponse> {
-  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/scans/${taskId}`)
+  const response = await authenticatedFetch(`/api/scans/${taskId}`)
 
   if (!response.ok) {
     if (response.status === 403) {

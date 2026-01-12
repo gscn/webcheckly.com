@@ -34,7 +34,7 @@ const PerformanceCard = lazy(() => import("@/components/PerformanceCard"))
 const SEOComplianceCard = lazy(() => import("@/components/SEOComplianceCard"))
 const SecurityPanel = lazy(() => import("@/components/SecurityPanel"))
 const AccessibilityCard = lazy(() => import("@/components/AccessibilityCard"))
-import { API_BASE_URL, debugError } from "@/utils/config"
+import { debugError } from "@/utils/config"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { createScanTask, pollTaskStatus, getTaskResults, TaskStatusResponse, type CreateTaskResponse } from "@/services/taskService"

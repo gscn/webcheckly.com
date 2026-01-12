@@ -1,5 +1,4 @@
 import { authenticatedFetch } from './authService';
-import { NORMALIZED_API_BASE_URL } from '@/utils/config';
 
 // 使用统一的 API 基础 URL
 
@@ -33,7 +32,7 @@ export async function verifyPayment(orderId: string): Promise<{
   status: string;
   paid_at?: string;
 }> {
-  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/payment/verify/${orderId}`);
+  const response = await authenticatedFetch(`/api/payment/verify/${orderId}`);
   if (!response.ok) {
     throw new Error('Failed to verify payment');
   }
