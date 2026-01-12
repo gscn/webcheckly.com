@@ -23,7 +23,7 @@ export interface DashboardData {
   plans: Record<string, PricingPlan>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // 获取dashboard统一数据
 export async function getDashboardData(): Promise<DashboardData> {

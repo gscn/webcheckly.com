@@ -17,7 +17,7 @@ export interface Order {
   expires_at?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // 创建订单
 export async function createOrder(

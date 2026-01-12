@@ -49,7 +49,7 @@ export interface SubscriptionUsage {
   updated_at: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // 获取套餐列表
 export async function getSubscriptionPlans(): Promise<PricingPlan[]> {
