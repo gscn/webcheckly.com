@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useLanguage } from "@/contexts/LanguageContext"
@@ -18,13 +18,32 @@ export default function Header() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loadingCredits, setLoadingCredits] = useState(false)
 
+  const loadUserInfo = useCallback(async () => {
+    if (!user) return // 如果用户未登录，不加载信息
+    
+    setLoadingCredits(true)
+    try {
+      const [creditsData, subscriptionData] = await Promise.all([
+        getCreditsBalance(),
+        getUserSubscription(),
+      ])
+      setCredits(creditsData)
+      setSubscription(subscriptionData)
+    } catch (error) {
+      // 静默处理错误（服务函数已经处理了401错误）
+      console.error('Failed to load user info:', error)
+    } finally {
+      setLoadingCredits(false)
+    }
+  }, [user])
+
   useEffect(() => {
     if (user) {
       loadUserInfo()
     }
-  }, [user])
+  }, [user, loadUserInfo])
 
-  const loadUserInfo = async () => {
+  const loadUserInfoOld = async () => {
     if (!user) return // 如果用户未登录，不加载信息
     
     setLoadingCredits(true)

@@ -183,7 +183,7 @@ export default function DeepCheckPage() {
         (error: string) => {
           debugError("[DeepCheckPage] Stream error:", error)
           // 只有在没有结果时才设置为错误状态，否则保持done状态并显示部分结果
-          if (!results || (katanaResults?.length || 0) === 0) {
+          if (!results || (results?.katana_results?.length || 0) === 0) {
             setState("error")
             setError(error)
           } else {
@@ -199,7 +199,7 @@ export default function DeepCheckPage() {
       setState("error")
       setError(err.message || t("errors.scanFailed"))
     }
-  }, [targetUrl, locale, t])
+  }, [targetUrl, locale, t, results])
 
   const handleStop = useCallback(() => {
     cleanup()

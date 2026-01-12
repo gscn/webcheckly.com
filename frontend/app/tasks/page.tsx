@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -33,15 +33,7 @@ export default function TasksPage() {
   const [total, setTotal] = useState(0);
   const limit = 20;
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login?redirect=/tasks');
-      return;
-    }
-    loadTasks();
-  }, [user, page, router]);
-
-  const loadTasks = async (isRefresh = false) => {
+  const loadTasks = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
     } else {
@@ -71,7 +63,15 @@ export default function TasksPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [page, limit, t, router]);
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login?redirect=/tasks');
+      return;
+    }
+    loadTasks();
+  }, [user, page, router, loadTasks]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

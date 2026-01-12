@@ -454,7 +454,7 @@ export default function ScanPage() {
         stopPollingRef.current = null
       }
     }
-  }, [url, options, aiMode, locale, t])
+  }, [url, options, aiMode, locale, t, router, user])
 
   // 加载用户信息和功能定价
   useEffect(() => {

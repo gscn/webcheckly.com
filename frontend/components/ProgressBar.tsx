@@ -11,13 +11,11 @@ interface ProgressBarProps {
 
 function ProgressBar({ progress, startTime }: ProgressBarProps) {
   const { t } = useLanguage()
-  if (!progress.total) return null
-
-  const percent = Math.round((progress.current / progress.total) * 100)
+  const percent = progress.total ? Math.round((progress.current / progress.total) * 100) : 0
 
   // 计算预估剩余时间
   const estimatedTimeRemaining = useMemo(() => {
-    if (!startTime || progress.current === 0 || progress.current >= progress.total) {
+    if (!progress.total || !startTime || progress.current === 0 || progress.current >= progress.total) {
       return null
     }
 
@@ -33,7 +31,9 @@ function ProgressBar({ progress, startTime }: ProgressBarProps) {
     } else {
       return `${Math.round(estimated / 3600)}小时`
     }
-  }, [startTime, progress.current, progress.total])
+  }, [progress, startTime])
+
+  if (!progress.total) return null
 
   return (
     <div className="w-full mb-6">
