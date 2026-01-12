@@ -1,4 +1,4 @@
-import { authenticatedFetch } from './authService';
+import { subscriptionApi, apiUtils, userApi } from '@/services/apiService';
 
 export interface PricingPlan {
   plan_type: string;
@@ -81,16 +81,25 @@ export async function getFeaturePricing(): Promise<FeaturePricing[]> {
 // 获取用户订阅状态
 export async function getUserSubscription(): Promise<Subscription | null> {
   try {
-    const response = await authenticatedFetch('/api/subscription/status');
-    if (!response.ok) {
-      if (response.status === 401) {
-        // 401是正常的（未登录），静默返回null
+    try {
+      const response = await userApi.getUserSubscription();
+      if (!response.ok) {
+        if (response.status === 401) {
+          // 401是正常的（未登录），静默返回null
+          return null;
+        }
+        throw new Error('Failed to fetch subscription');
+      }
+      const data = await response.json();
+      return data.subscription || null;
+    } catch (error) {
+      // 401错误是正常的（未登录），不记录错误
+      if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
         return null;
       }
-      throw new Error('Failed to fetch subscription');
+      console.error('Error fetching subscription:', error);
+      return null;
     }
-    const data = await response.json();
-    return data.subscription || null;
   } catch (error) {
     // 401错误是正常的（未登录），不记录错误
     if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
@@ -107,7 +116,7 @@ export async function getMonthlyUsage(month?: string): Promise<SubscriptionUsage
     const url = month 
       ? `/api/subscription/usage?month=${month}`
       : '/api/subscription/usage';
-    const response = await authenticatedFetch(url);
+    const response = await userApi.getMonthlyUsage(month);
     if (!response.ok) {
       if (response.status === 404) {
         return null;
@@ -130,28 +139,13 @@ export async function createSubscription(
   const body: any = { plan_type: planType };
   if (paymentMethod) body.payment_method = paymentMethod;
 
-  const response = await authenticatedFetch('/api/subscription/subscribe', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to create subscription');
-  }
-
-  return response.json();
+  const response = await subscriptionApi.createSubscription(body);
+  return apiUtils.handleResponse<{ session_id?: string; subscription_id?: string; url: string; provider: 'stripe' | 'paypal' }>(response);
 }
 
 // 取消订阅
 export async function cancelSubscription(): Promise<void> {
-  const response = await authenticatedFetch('/api/subscription/cancel', {
-    method: 'POST',
-  });
-
+  const response = await subscriptionApi.cancelSubscription();
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || 'Failed to cancel subscription');

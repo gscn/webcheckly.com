@@ -1,7 +1,7 @@
-import { NORMALIZED_API_BASE_URL, debugError } from "@/utils/config"
+import { debugError, NORMALIZED_API_BASE_URL } from "@/utils/config"
 import { TaskResults } from "@/types/scan"
 import { fetchWithRetry } from "@/utils/retry"
-import { authenticatedFetch, getAccessToken } from "@/services/authService"
+import { taskApi, apiUtils, buildApiUrl } from "@/services/apiService"
 
 // 任务状态
 export type TaskStatus = "pending" | "running" | "completed" | "failed"
@@ -55,13 +55,7 @@ export type { TaskResults }
  * 创建扫描任务
  */
 export async function createScanTask(request: CreateTaskRequest): Promise<CreateTaskResponse> {
-  const response = await authenticatedFetch('/api/scans', {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(request),
-  })
+  const response = await taskApi.createScanTask(request);
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: "Failed to create task" }))
@@ -80,7 +74,7 @@ export async function createScanTask(request: CreateTaskRequest): Promise<Create
  * 获取任务状态
  */
 export async function getTaskStatus(taskId: string): Promise<TaskStatusResponse> {
-  const response = await authenticatedFetch(`/api/scans/${taskId}`)
+  const response = await taskApi.getTaskStatus(taskId);
 
   if (!response.ok) {
     if (response.status === 403) {
@@ -101,8 +95,8 @@ export async function getTaskStatus(taskId: string): Promise<TaskStatusResponse>
  */
 export async function getTaskResults(taskId: string): Promise<TaskResults> {
   try {
-    // 使用authenticatedFetch，但需要适配fetchWithRetry
-    const token = getAccessToken()
+    // 使用fetchWithRetry，但需要构造正确的URL
+    const token = localStorage.getItem('webcheckly_access_token');
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     }
@@ -229,8 +223,8 @@ export function streamTaskStatus(
   onError?: (error: string) => void
 ): () => void {
   // EventSource不支持自定义headers，需要通过query参数传递token
-  const token = getAccessToken()
-  let streamUrl = `${NORMALIZED_API_BASE_URL}/api/scans/${taskId}/stream`
+  const token = localStorage.getItem('webcheckly_access_token')
+  let streamUrl = `${buildApiUrl(`/api/scans/${taskId}/stream`)}`
   if (token) {
     streamUrl += `?token=${encodeURIComponent(token)}`
   }

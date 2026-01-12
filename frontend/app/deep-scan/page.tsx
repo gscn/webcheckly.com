@@ -6,7 +6,7 @@ import Footer from "@/components/Footer"
 import KatanaResults from "@/components/deep-scan/KatanaResults"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { createScanTask, streamTaskStatus, TaskStatusResponse } from "@/services/taskService"
-import { authenticatedFetch } from "@/services/authService"
+import { taskApi } from "@/services/apiService"
 import { TaskResults, KatanaResult, ScanResult } from "@/types/scan"
 import { debugError } from "@/utils/config"
 import { buildReport } from "@/utils/report"
@@ -164,7 +164,7 @@ export default function DeepCheckPage() {
         (data: any) => {
           setState("done")
           // 最终获取完整结果（确保所有数据都已同步）
-          authenticatedFetch(`/api/scans/${taskResponse.id}/results`)
+          taskApi.getTaskResults(taskResponse.id)
             .then((res) => {
               if (!res.ok) {
                 throw new Error(`HTTP ${res.status}`)

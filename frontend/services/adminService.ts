@@ -1,4 +1,4 @@
-import { authenticatedFetch } from './authService';
+import { adminApi, apiUtils } from '@/services/apiService';
 
 // 类型定义
 export interface AdminUser {
@@ -99,49 +99,31 @@ export async function getUsersList(page = 1, pageSize = 20, search = ''): Promis
     page_size: pageSize.toString(),
     ...(search && { search }),
   });
-  const response = await authenticatedFetch(`/api/admin/users?${params}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch users');
-  }
-  return response.json();
+  const response = await adminApi.getUsers(page, pageSize, search);
+  return apiUtils.handleResponse<AdminUserListResponse>(response);
 }
 
 export async function getUserDetails(userId: string): Promise<AdminUserDetailResponse> {
-  const response = await authenticatedFetch(`/api/admin/users/${userId}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch user details');
-  }
-  return response.json();
+  const response = await adminApi.getUserDetails(userId);
+  return apiUtils.handleResponse<AdminUserDetailResponse>(response);
 }
 
 export async function updateUserRole(userId: string, role: string): Promise<void> {
-  const response = await authenticatedFetch(`/api/admin/users/${userId}/role`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ role }),
-  });
+  const response = await adminApi.updateUserRole(userId, role);
   if (!response.ok) {
     throw new Error('Failed to update user role');
   }
 }
 
 export async function updateUserStatus(userId: string, emailVerified: boolean): Promise<void> {
-  const response = await authenticatedFetch(`/api/admin/users/${userId}/status`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email_verified: emailVerified }),
-  });
+  const response = await adminApi.updateUserStatus(userId, emailVerified);
   if (!response.ok) {
     throw new Error('Failed to update user status');
   }
 }
 
 export async function updateUserInfo(userId: string, email: string): Promise<void> {
-  const response = await authenticatedFetch(`/api/admin/users/${userId}/info`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  });
+  const response = await adminApi.updateUserInfo(userId, email);
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     throw new Error(error.error || 'Failed to update user info');
@@ -149,9 +131,7 @@ export async function updateUserInfo(userId: string, email: string): Promise<voi
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  const response = await authenticatedFetch(`/api/admin/users/${userId}`, {
-    method: 'DELETE',
-  });
+  const response = await adminApi.deleteUser(userId);
   if (!response.ok) {
     throw new Error('Failed to delete user');
   }
@@ -169,36 +149,25 @@ export async function getTasksList(
     ...(filters.status && { status: filters.status }),
     ...(filters.user_id && { user_id: filters.user_id }),
   });
-  const response = await authenticatedFetch(`/api/admin/tasks?${params}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch tasks');
-  }
-  return response.json();
+  const response = await adminApi.getTasks(page, pageSize, filters);
+  return apiUtils.handleResponse<AdminTaskListResponse>(response);
 }
 
 export async function getTaskDetails(taskId: string): Promise<AdminTask> {
-  const response = await authenticatedFetch(`/api/admin/tasks/${taskId}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch task details');
-  }
-  return response.json();
+  const response = await adminApi.getTaskDetails(taskId);
+  return apiUtils.handleResponse<AdminTask>(response);
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
-  const response = await authenticatedFetch(`/api/admin/tasks/${taskId}`, {
-    method: 'DELETE',
-  });
+  const response = await adminApi.deleteTask(taskId);
   if (!response.ok) {
     throw new Error('Failed to delete task');
   }
 }
 
 export async function getTaskStatistics(): Promise<any> {
-  const response = await authenticatedFetch(`/api/admin/tasks/statistics`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch task statistics');
-  }
-  return response.json();
+  const response = await adminApi.getTaskStatistics();
+  return apiUtils.handleResponse<any>(response);
 }
 
 // 订阅管理
@@ -213,39 +182,25 @@ export async function getSubscriptionsList(
     ...(filters.status && { status: filters.status }),
     ...(filters.plan_type && { plan_type: filters.plan_type }),
   });
-  const response = await authenticatedFetch(`/api/admin/subscriptions?${params}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch subscriptions');
-  }
-  return response.json();
+  const response = await adminApi.getSubscriptions(page, pageSize, filters);
+  return apiUtils.handleResponse<AdminSubscriptionListResponse>(response);
 }
 
 export async function updateSubscription(subscriptionId: string, updates: { status?: string }): Promise<void> {
-  const response = await authenticatedFetch(`/api/admin/subscriptions/${subscriptionId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updates),
-  });
+  const response = await adminApi.updateSubscription(subscriptionId, updates);
   if (!response.ok) {
     throw new Error('Failed to update subscription');
   }
 }
 
 export async function getSubscriptionStatistics(): Promise<any> {
-  const response = await authenticatedFetch(`/api/admin/subscriptions/statistics`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch subscription statistics');
-  }
-  return response.json();
+  const response = await adminApi.getSubscriptionStatistics();
+  return apiUtils.handleResponse<any>(response);
 }
 
 // 积分管理
 export async function adjustUserCredits(userId: string, amount: number, reason: string): Promise<void> {
-  const response = await authenticatedFetch(`/api/admin/credits/adjust`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id: userId, amount, reason }),
-  });
+  const response = await adminApi.adjustUserCredits(userId, amount, reason);
   if (!response.ok) {
     throw new Error('Failed to adjust user credits');
   }
@@ -253,10 +208,7 @@ export async function adjustUserCredits(userId: string, amount: number, reason: 
 
 // 系统统计
 export async function getSystemStatistics(): Promise<SystemStatistics> {
-  const response = await authenticatedFetch(`/api/admin/statistics`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch system statistics');
-  }
-  return response.json();
+  const response = await adminApi.getSystemStatistics();
+  return apiUtils.handleResponse<SystemStatistics>(response);
 }
 

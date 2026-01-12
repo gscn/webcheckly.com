@@ -1,5 +1,15 @@
 // 应用配置
-export const NORMALIZED_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+
+// 规范化 API 基础 URL，确保没有尾随斜杠
+export const normalizeBaseUrl = (baseUrl: string): string => {
+  if (!baseUrl) return ""
+  // 移除尾随的 /api（可选的尾随斜杠），避免双重路径
+  // 使用更精确的正则表达式，确保 /api 是作为独立路径段结尾的
+  return baseUrl.replace(/\/api(?:\/)?$/, "")
+}
+
+export const NORMALIZED_API_BASE_URL = normalizeBaseUrl(API_BASE_URL)
 
 // 构建完整API URL
 export const buildApiUrl = (endpoint: string): string => {

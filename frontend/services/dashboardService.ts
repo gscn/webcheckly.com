@@ -1,4 +1,4 @@
-import { authenticatedFetch } from './authService';
+import { dashboardApi, apiUtils } from '@/services/apiService';
 import type { UserCredits } from './creditsService';
 import type { Subscription, SubscriptionUsage } from './pricingService';
 import type { UsageStats } from './creditsService';
@@ -27,10 +27,7 @@ export interface DashboardData {
 
 // 获取dashboard统一数据
 export async function getDashboardData(): Promise<DashboardData> {
-  const response = await authenticatedFetch('/api/dashboard');
-  if (!response.ok) {
-    throw new Error('Failed to fetch dashboard data');
-  }
-  return response.json();
+  const response = await dashboardApi.getData();
+  return apiUtils.handleResponse<DashboardData>(response);
 }
 

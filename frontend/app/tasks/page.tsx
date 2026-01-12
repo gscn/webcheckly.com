@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { authenticatedFetch } from '@/services/authService';
+import { taskApi, apiUtils } from '@/services/apiService';
 
 interface Task {
   id: string;
@@ -41,9 +41,7 @@ export default function TasksPage() {
     
     try {
       const offset = (page - 1) * limit;
-      const response = await authenticatedFetch(
-        `/api/tasks?limit=${limit}&offset=${offset}`
-      );
+      const response = await taskApi.getTasks(limit, offset);
       if (!response.ok) {
         if (response.status === 401) {
           router.push('/login?redirect=/tasks');

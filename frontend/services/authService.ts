@@ -1,10 +1,11 @@
 
-import { NORMALIZED_API_BASE_URL } from "@/utils/config"
+import { authApi, apiUtils } from "@/services/apiService";
+import { NORMALIZED_API_BASE_URL } from "@/utils/config";
 
 // 构建完整URL
 const buildUrl = (endpoint: string): string => {
-  return `${NORMALIZED_API_BASE_URL}${endpoint}`
-}
+  return `${NORMALIZED_API_BASE_URL}${endpoint}`;
+};
 
 // 用户信息
 export interface User {
@@ -132,15 +133,7 @@ async function refreshToken(): Promise<boolean> {
   if (!refreshTokenValue) return false
 
   try {
-    const response = await fetch(buildUrl('/api/auth/refresh'), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        refresh_token: refreshTokenValue,
-      }),
-    })
+    const response = await authApi.refreshToken({ refresh_token: refreshTokenValue })
 
     if (!response.ok) {
       clearTokens()
@@ -159,13 +152,7 @@ async function refreshToken(): Promise<boolean> {
 
 // 用户注册
 export async function register(email: string, password: string): Promise<User> {
-  const response = await fetch(buildUrl('/api/auth/register'), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-  })
+  const response = await authApi.register({ email, password })
 
   if (!response.ok) {
     const error = await response.json()
@@ -178,13 +165,7 @@ export async function register(email: string, password: string): Promise<User> {
 
 // 用户登录
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  const response = await fetch(buildUrl('/api/auth/login'), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-  })
+  const response = await authApi.login({ email, password });
 
   if (!response.ok) {
     const error = await response.json()
@@ -203,9 +184,7 @@ export function logout() {
 
 // 验证邮箱
 export async function verifyEmail(token: string): Promise<void> {
-  const response = await fetch(buildUrl(`/api/auth/verify-email?token=${token}`), {
-    method: "POST",
-  })
+  const response = await authApi.verifyEmail(token)
 
   if (!response.ok) {
     const error = await response.json()
@@ -215,13 +194,7 @@ export async function verifyEmail(token: string): Promise<void> {
 
 // 重新发送验证邮件
 export async function resendVerificationEmail(email: string): Promise<void> {
-  const response = await fetch(buildUrl('/api/auth/resend-verification'), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
-  })
+  const response = await authApi.resendVerification({ email })
 
   if (!response.ok) {
     const error = await response.json()
@@ -231,13 +204,7 @@ export async function resendVerificationEmail(email: string): Promise<void> {
 
 // 请求密码重置
 export async function forgotPassword(email: string): Promise<void> {
-  const response = await fetch(buildUrl('/api/auth/forgot-password'), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
-  })
+  const response = await authApi.forgotPassword({ email })
 
   if (!response.ok) {
     const error = await response.json()
@@ -247,13 +214,7 @@ export async function forgotPassword(email: string): Promise<void> {
 
 // 重置密码
 export async function resetPassword(token: string, newPassword: string): Promise<void> {
-  const response = await fetch(buildUrl('/api/auth/reset-password'), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ token, new_password: newPassword }),
-  })
+  const response = await authApi.resetPassword({ token, new_password: newPassword })
 
   if (!response.ok) {
     const error = await response.json()

@@ -24,7 +24,7 @@ export default function PricingPage() {
   const [purchasingCredits, setPurchasingCredits] = useState(false);
   const [creditAmount, setCreditAmount] = useState(100);
   const [error, setError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('paypal');
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -165,17 +165,6 @@ export default function PricingPage() {
                     <input
                       type="radio"
                       name="paymentMethod"
-                      value="stripe"
-                      checked={paymentMethod === 'stripe'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'stripe' | 'paypal')}
-                      className="w-4 h-4 text-tech-cyan bg-tech-surface border-tech-border focus:ring-tech-cyan focus:ring-2"
-                    />
-                    <span className="text-sm text-gray-300 font-mono">Stripe (信用卡)</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
                       value="paypal"
                       checked={paymentMethod === 'paypal'}
                       onChange={(e) => setPaymentMethod(e.target.value as 'stripe' | 'paypal')}
@@ -183,6 +172,17 @@ export default function PricingPage() {
                     />
                     <span className="text-sm text-gray-300 font-mono">PayPal</span>
                   </label>
+                  {/* <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="stripe"
+                      checked={paymentMethod === 'stripe'}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'stripe' | 'paypal')}
+                      className="w-4 h-4 text-tech-cyan bg-tech-surface border-tech-border focus:ring-tech-cyan focus:ring-2"
+                    />
+                    <span className="text-sm text-gray-300 font-mono">Stripe (信用卡)</span>
+                  </label> */}
                 </div>
               </div>
             </div>
