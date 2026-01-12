@@ -1,14 +1,9 @@
 
-import { normalizeBaseUrl } from "@/utils/config"
-
-// 获取基础API URL
-const getBaseApiUrl = (): string => {
-  return normalizeBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL || "")
-}
+import { NORMALIZED_API_BASE_URL } from "@/utils/config"
 
 // 构建完整URL
 const buildUrl = (endpoint: string): string => {
-  return `${getBaseApiUrl()}${endpoint}`
+  return `${NORMALIZED_API_BASE_URL}${endpoint}`
 }
 
 // 用户信息
