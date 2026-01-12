@@ -1,4 +1,4 @@
-import { API_BASE_URL, debugError } from "@/utils/config"
+import { NORMALIZED_API_BASE_URL, debugError } from "@/utils/config"
 import { TaskResults } from "@/types/scan"
 import { fetchWithRetry } from "@/utils/retry"
 import { authenticatedFetch, getAccessToken } from "@/services/authService"
@@ -55,7 +55,7 @@ export type { TaskResults }
  * 创建扫描任务
  */
 export async function createScanTask(request: CreateTaskRequest): Promise<CreateTaskResponse> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/scans`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/scans`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -80,7 +80,7 @@ export async function createScanTask(request: CreateTaskRequest): Promise<Create
  * 获取任务状态
  */
 export async function getTaskStatus(taskId: string): Promise<TaskStatusResponse> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/scans/${taskId}`)
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/scans/${taskId}`)
 
   if (!response.ok) {
     if (response.status === 403) {
@@ -111,7 +111,7 @@ export async function getTaskResults(taskId: string): Promise<TaskResults> {
     }
 
     const response = await fetchWithRetry(
-      `${API_BASE_URL}/api/scans/${taskId}/results`,
+      `${NORMALIZED_API_BASE_URL}/api/scans/${taskId}/results`,
       { headers },
       {
         maxRetries: 2,
@@ -230,7 +230,7 @@ export function streamTaskStatus(
 ): () => void {
   // EventSource不支持自定义headers，需要通过query参数传递token
   const token = getAccessToken()
-  let streamUrl = `${API_BASE_URL}/api/scans/${taskId}/stream`
+  let streamUrl = `${NORMALIZED_API_BASE_URL}/api/scans/${taskId}/stream`
   if (token) {
     streamUrl += `?token=${encodeURIComponent(token)}`
   }

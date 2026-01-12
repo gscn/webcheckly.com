@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/utils/config"
+import { NORMALIZED_API_BASE_URL } from "@/utils/config"
 
 // 用户信息
 export interface User {
@@ -123,7 +123,7 @@ async function refreshToken(): Promise<boolean> {
   if (!refreshTokenValue) return false
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+    const response = await fetch(`${NORMALIZED_API_BASE_URL}/api/auth/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -150,7 +150,7 @@ async function refreshToken(): Promise<boolean> {
 
 // 用户注册
 export async function register(email: string, password: string): Promise<User> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+  const response = await fetch(`${NORMALIZED_API_BASE_URL}/api/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -169,7 +169,7 @@ export async function register(email: string, password: string): Promise<User> {
 
 // 用户登录
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+  const response = await fetch(`${NORMALIZED_API_BASE_URL}/api/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -194,7 +194,7 @@ export function logout() {
 
 // 验证邮箱
 export async function verifyEmail(token: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/verify-email?token=${token}`, {
+  const response = await fetch(`${NORMALIZED_API_BASE_URL}/api/auth/verify-email?token=${token}`, {
     method: "POST",
   })
 
@@ -206,7 +206,7 @@ export async function verifyEmail(token: string): Promise<void> {
 
 // 重新发送验证邮件
 export async function resendVerificationEmail(email: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/resend-verification`, {
+  const response = await fetch(`${NORMALIZED_API_BASE_URL}/api/auth/resend-verification`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -222,7 +222,7 @@ export async function resendVerificationEmail(email: string): Promise<void> {
 
 // 请求密码重置
 export async function forgotPassword(email: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+  const response = await fetch(`${NORMALIZED_API_BASE_URL}/api/auth/forgot-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -238,7 +238,7 @@ export async function forgotPassword(email: string): Promise<void> {
 
 // 重置密码
 export async function resetPassword(token: string, newPassword: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+  const response = await fetch(`${NORMALIZED_API_BASE_URL}/api/auth/reset-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -258,7 +258,7 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!token) return null
 
   try {
-    const response = await authenticatedFetch(`${API_BASE_URL}/api/auth/me`)
+    const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/auth/me`)
 
     if (!response.ok) {
       if (response.status === 401) {

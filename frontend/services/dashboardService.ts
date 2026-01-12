@@ -1,4 +1,5 @@
 import { authenticatedFetch } from './authService';
+import { NORMALIZED_API_BASE_URL } from '@/utils/config';
 import type { UserCredits } from './creditsService';
 import type { Subscription, SubscriptionUsage } from './pricingService';
 import type { UsageStats } from './creditsService';
@@ -23,11 +24,11 @@ export interface DashboardData {
   plans: Record<string, PricingPlan>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+// 使用统一的 API 基础 URL
 
 // 获取dashboard统一数据
 export async function getDashboardData(): Promise<DashboardData> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/dashboard`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/dashboard`);
   if (!response.ok) {
     throw new Error('Failed to fetch dashboard data');
   }

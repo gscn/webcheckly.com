@@ -1,4 +1,5 @@
 import { authenticatedFetch } from './authService';
+import { NORMALIZED_API_BASE_URL } from '@/utils/config';
 
 export interface Order {
   id: string;
@@ -17,7 +18,7 @@ export interface Order {
   expires_at?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+// 使用统一的 API 基础 URL
 
 // 创建订单
 export async function createOrder(
@@ -31,7 +32,7 @@ export async function createOrder(
   if (amount) body.amount = amount;
   if (paymentMethod) body.payment_method = paymentMethod;
 
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/orders/create`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/orders/create`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -49,7 +50,7 @@ export async function createOrder(
 
 // 获取订单详情
 export async function getOrder(orderId: string): Promise<Order> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/orders/${orderId}`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/orders/${orderId}`);
   if (!response.ok) {
     throw new Error('Failed to fetch order');
   }
@@ -59,7 +60,7 @@ export async function getOrder(orderId: string): Promise<Order> {
 // 获取订单列表
 export async function getOrders(limit = 20, offset = 0): Promise<Order[]> {
   const response = await authenticatedFetch(
-    `${API_BASE_URL}/api/orders?limit=${limit}&offset=${offset}`
+    `${NORMALIZED_API_BASE_URL}/api/orders?limit=${limit}&offset=${offset}`
   );
   if (!response.ok) {
     throw new Error('Failed to fetch orders');
@@ -69,7 +70,7 @@ export async function getOrders(limit = 20, offset = 0): Promise<Order[]> {
 
 // 取消订单
 export async function cancelOrder(orderId: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/orders/${orderId}/cancel`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/orders/${orderId}/cancel`, {
     method: 'POST',
   });
 
@@ -87,7 +88,7 @@ export async function createCheckoutSession(
   const body: any = { order_id: orderId };
   if (paymentMethod) body.payment_method = paymentMethod;
 
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/payment/create-checkout`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/payment/create-checkout`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

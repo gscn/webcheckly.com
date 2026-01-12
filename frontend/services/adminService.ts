@@ -1,5 +1,5 @@
 import { authenticatedFetch } from './authService';
-import { API_BASE_URL } from '@/utils/config';
+import { NORMALIZED_API_BASE_URL } from '@/utils/config';
 
 // 类型定义
 export interface AdminUser {
@@ -100,7 +100,7 @@ export async function getUsersList(page = 1, pageSize = 20, search = ''): Promis
     page_size: pageSize.toString(),
     ...(search && { search }),
   });
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/users?${params}`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/users?${params}`);
   if (!response.ok) {
     throw new Error('Failed to fetch users');
   }
@@ -108,7 +108,7 @@ export async function getUsersList(page = 1, pageSize = 20, search = ''): Promis
 }
 
 export async function getUserDetails(userId: string): Promise<AdminUserDetailResponse> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/users/${userId}`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/users/${userId}`);
   if (!response.ok) {
     throw new Error('Failed to fetch user details');
   }
@@ -116,7 +116,7 @@ export async function getUserDetails(userId: string): Promise<AdminUserDetailRes
 }
 
 export async function updateUserRole(userId: string, role: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/users/${userId}/role`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/users/${userId}/role`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ role }),
@@ -127,7 +127,7 @@ export async function updateUserRole(userId: string, role: string): Promise<void
 }
 
 export async function updateUserStatus(userId: string, emailVerified: boolean): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/users/${userId}/status`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/users/${userId}/status`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email_verified: emailVerified }),
@@ -138,7 +138,7 @@ export async function updateUserStatus(userId: string, emailVerified: boolean): 
 }
 
 export async function updateUserInfo(userId: string, email: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/users/${userId}/info`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/users/${userId}/info`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
@@ -150,7 +150,7 @@ export async function updateUserInfo(userId: string, email: string): Promise<voi
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/users/${userId}`, {
     method: 'DELETE',
   });
   if (!response.ok) {
@@ -170,7 +170,7 @@ export async function getTasksList(
     ...(filters.status && { status: filters.status }),
     ...(filters.user_id && { user_id: filters.user_id }),
   });
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/tasks?${params}`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/tasks?${params}`);
   if (!response.ok) {
     throw new Error('Failed to fetch tasks');
   }
@@ -178,7 +178,7 @@ export async function getTasksList(
 }
 
 export async function getTaskDetails(taskId: string): Promise<AdminTask> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/tasks/${taskId}`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/tasks/${taskId}`);
   if (!response.ok) {
     throw new Error('Failed to fetch task details');
   }
@@ -186,7 +186,7 @@ export async function getTaskDetails(taskId: string): Promise<AdminTask> {
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/tasks/${taskId}`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/tasks/${taskId}`, {
     method: 'DELETE',
   });
   if (!response.ok) {
@@ -195,7 +195,7 @@ export async function deleteTask(taskId: string): Promise<void> {
 }
 
 export async function getTaskStatistics(): Promise<any> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/tasks/statistics`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/tasks/statistics`);
   if (!response.ok) {
     throw new Error('Failed to fetch task statistics');
   }
@@ -214,7 +214,7 @@ export async function getSubscriptionsList(
     ...(filters.status && { status: filters.status }),
     ...(filters.plan_type && { plan_type: filters.plan_type }),
   });
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/subscriptions?${params}`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/subscriptions?${params}`);
   if (!response.ok) {
     throw new Error('Failed to fetch subscriptions');
   }
@@ -222,7 +222,7 @@ export async function getSubscriptionsList(
 }
 
 export async function updateSubscription(subscriptionId: string, updates: { status?: string }): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/subscriptions/${subscriptionId}`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/subscriptions/${subscriptionId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
@@ -233,7 +233,7 @@ export async function updateSubscription(subscriptionId: string, updates: { stat
 }
 
 export async function getSubscriptionStatistics(): Promise<any> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/subscriptions/statistics`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/subscriptions/statistics`);
   if (!response.ok) {
     throw new Error('Failed to fetch subscription statistics');
   }
@@ -242,7 +242,7 @@ export async function getSubscriptionStatistics(): Promise<any> {
 
 // 积分管理
 export async function adjustUserCredits(userId: string, amount: number, reason: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/credits/adjust`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/credits/adjust`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ user_id: userId, amount, reason }),
@@ -254,7 +254,7 @@ export async function adjustUserCredits(userId: string, amount: number, reason: 
 
 // 系统统计
 export async function getSystemStatistics(): Promise<SystemStatistics> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/statistics`);
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/admin/statistics`);
   if (!response.ok) {
     throw new Error('Failed to fetch system statistics');
   }

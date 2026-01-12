@@ -1,4 +1,5 @@
 import { authenticatedFetch } from './authService';
+import { NORMALIZED_API_BASE_URL } from '@/utils/config';
 
 export interface PricingPlan {
   plan_type: string;
@@ -49,11 +50,11 @@ export interface SubscriptionUsage {
   updated_at: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+// 使用统一的 API 基础 URL
 
 // 获取套餐列表
 export async function getSubscriptionPlans(): Promise<PricingPlan[]> {
-  const response = await fetch(`${API_BASE_URL}/api/subscription/plans`);
+  const response = await fetch(`${NORMALIZED_API_BASE_URL}/api/subscription/plans`);
   if (!response.ok) {
     throw new Error('Failed to fetch subscription plans');
   }
@@ -63,7 +64,7 @@ export async function getSubscriptionPlans(): Promise<PricingPlan[]> {
 
 // 获取功能定价
 export async function getFeaturePricing(): Promise<FeaturePricing[]> {
-  const response = await fetch(`${API_BASE_URL}/api/pricing/features`);
+  const response = await fetch(`${NORMALIZED_API_BASE_URL}/api/pricing/features`);
   if (!response.ok) {
     throw new Error('Failed to fetch feature pricing');
   }
@@ -73,7 +74,7 @@ export async function getFeaturePricing(): Promise<FeaturePricing[]> {
 // 获取用户订阅状态
 export async function getUserSubscription(): Promise<Subscription | null> {
   try {
-    const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/status`);
+    const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/subscription/status`);
     if (!response.ok) {
       if (response.status === 401) {
         // 401是正常的（未登录），静默返回null
@@ -97,8 +98,8 @@ export async function getUserSubscription(): Promise<Subscription | null> {
 export async function getMonthlyUsage(month?: string): Promise<SubscriptionUsage | null> {
   try {
     const url = month 
-      ? `${API_BASE_URL}/api/subscription/usage?month=${month}`
-      : `${API_BASE_URL}/api/subscription/usage`;
+      ? `${NORMALIZED_API_BASE_URL}/api/subscription/usage?month=${month}`
+      : `${NORMALIZED_API_BASE_URL}/api/subscription/usage`;
     const response = await authenticatedFetch(url);
     if (!response.ok) {
       if (response.status === 404) {
@@ -122,7 +123,7 @@ export async function createSubscription(
   const body: any = { plan_type: planType };
   if (paymentMethod) body.payment_method = paymentMethod;
 
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/subscribe`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/subscription/subscribe`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -140,7 +141,7 @@ export async function createSubscription(
 
 // 取消订阅
 export async function cancelSubscription(): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/cancel`, {
+  const response = await authenticatedFetch(`${NORMALIZED_API_BASE_URL}/api/subscription/cancel`, {
     method: 'POST',
   });
 
