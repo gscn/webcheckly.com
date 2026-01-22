@@ -141,7 +141,7 @@ export default function TasksPage() {
     if (!subscription || subscription.status !== 'active') {
       return { days: 24, unit: 'hours', text: '24小时' };
     }
-    const plan = plans.find((p) => p.plan_type === subscription.plan_type);
+    const plan = plans.find((p: PricingPlan) => p.plan_type === subscription.plan_type);
     if (!plan) {
       return { days: 24, unit: 'hours', text: '24小时' };
     }
@@ -503,7 +503,7 @@ export default function TasksPage() {
                         </tr>
                       </thead>
                       <tbody className="bg-tech-bg/40 divide-y divide-tech-border/20">
-                        {tasks.map((task) => (
+                        {tasks.map((task: Task) => (
                           <tr key={task.id} className="hover:bg-tech-surface/30 transition-colors">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className="text-sm font-mono text-tech-cyan/80">
@@ -518,7 +518,7 @@ export default function TasksPage() {
                             <td className="px-6 py-4">
                               <div className="flex flex-wrap gap-1">
                                 {task.options && task.options.length > 0 ? (
-                                  task.options.slice(0, 3).map((opt) => (
+                                  task.options.slice(0, 3).map((opt: string) => (
                                     <span
                                       key={opt}
                                       className="text-xs px-2 py-0.5 bg-tech-cyan/20 text-tech-cyan rounded font-mono"
@@ -585,7 +585,7 @@ export default function TasksPage() {
               {total > limit && (
                 <div className="flex items-center justify-center gap-4">
                   <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    onClick={() => setPage((p: number) => Math.max(1, p - 1))}
                     disabled={page === 1}
                     className="clip-tech-btn bg-tech-surface/80 hover:bg-tech-cyan/10 border-2 border-tech-cyan/60 hover:border-tech-cyan text-tech-cyan hover:text-tech-cyan font-mono text-xs font-bold px-4 py-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -595,7 +595,7 @@ export default function TasksPage() {
                     {t('tasks.page', { page, total: Math.ceil(total / limit) })}
                   </span>
                   <button
-                    onClick={() => setPage((p) => p + 1)}
+                    onClick={() => setPage((p: number) => p + 1)}
                     disabled={page >= Math.ceil(total / limit)}
                     className="clip-tech-btn bg-tech-surface/80 hover:bg-tech-cyan/10 border-2 border-tech-cyan/60 hover:border-tech-cyan text-tech-cyan hover:text-tech-cyan font-mono text-xs font-bold px-4 py-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >

@@ -1,5 +1,5 @@
 import { ScanReport } from "./report"
-import * as XLSX from "xlsx"
+import * as XLSX from "@e965/xlsx"
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle } from "docx"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"

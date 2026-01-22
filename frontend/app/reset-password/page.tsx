@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { resetPassword } from "@/services/authService"
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [token, setToken] = useState("")
@@ -57,26 +57,17 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center px-4 py-12">
-          <div className="w-full max-w-md">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20 text-center">
-              <h1 className="text-2xl font-bold mb-4 text-green-400">Password Reset Successful!</h1>
-              <p className="mb-4">Your password has been reset. Redirecting to login...</p>
-            </div>
-          </div>
-        </main>
-        <Footer />
+      <div className="w-full max-w-md">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20 text-center">
+          <h1 className="text-2xl font-bold mb-4 text-green-400">Password Reset Successful!</h1>
+          <p className="mb-4">Your password has been reset. Redirecting to login...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
+    <div className="w-full max-w-md">
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20">
             <h1 className="text-3xl font-bold text-center mb-6">Reset Password</h1>
             {error && (
@@ -127,10 +118,27 @@ export default function ResetPasswordPage() {
               </Link>
             </div>
           </div>
-        </div>
+    </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <Suspense fallback={
+          <div className="w-full max-w-md">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20 text-center">
+              <h1 className="text-3xl font-bold mb-6">Reset Password</h1>
+              <p className="text-gray-400">Loading...</p>
+            </div>
+          </div>
+        }>
+          <ResetPasswordContent />
+        </Suspense>
       </main>
       <Footer />
     </div>
   )
 }
-

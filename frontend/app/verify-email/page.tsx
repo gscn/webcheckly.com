@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Header from "@/components/Header"
@@ -8,7 +8,7 @@ import Footer from "@/components/Footer"
 import { verifyEmail, resendVerificationEmail } from "@/services/authService"
 import { useAuth } from "@/contexts/AuthContext"
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { refreshUser } = useAuth()
@@ -51,11 +51,8 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20">
+    <div className="w-full max-w-md">
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20">
             {status === "verifying" && (
               <div className="text-center">
                 <h1 className="text-2xl font-bold mb-4">Verifying Email...</h1>
@@ -131,7 +128,25 @@ export default function VerifyEmailPage() {
               </div>
             )}
           </div>
-        </div>
+    </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <Suspense fallback={
+          <div className="w-full max-w-md">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20 text-center">
+              <h1 className="text-2xl font-bold mb-4">Verifying Email...</h1>
+              <p className="text-gray-400">Loading...</p>
+            </div>
+          </div>
+        }>
+          <VerifyEmailContent />
+        </Suspense>
       </main>
       <Footer />
     </div>

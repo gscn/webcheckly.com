@@ -55,7 +55,7 @@ import { getFeaturePricing, type FeaturePricing } from "@/services/pricingServic
 import FeaturePricingBadge from "@/components/FeaturePricingBadge"
 import { checkFeatureAccess, checkMultipleFeatures, type FeatureAccessResult } from "@/services/featureAccessService"
 
-export default function ScanPage() {
+function ScanPageContent() {
   const { t, locale } = useLanguage()
   const { user } = useAuth()
   const params = useSearchParams()
@@ -155,7 +155,7 @@ export default function ScanPage() {
     const newOptions = getOptionsFromParams()
     
     // 只有当选项实际变化时才更新
-    setOptions((prev) => {
+    setOptions((prev: ScanOptions) => {
       if (
         prev.linkHealthCheck !== newOptions.linkHealthCheck ||
         prev.websiteInfo !== newOptions.websiteInfo ||
@@ -266,7 +266,7 @@ export default function ScanPage() {
         // 如果访问状态不存在或不可访问，重新检查
         if (!access || access.canAccess !== true) {
           access = await checkFeatureAccess('performance')
-          setFeatureAccess(prev => ({ ...prev, 'performance': access }))
+          setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'performance': access }))
         }
         if (access.canAccess === true) {
           optionsArray.push("performance")
@@ -297,7 +297,7 @@ export default function ScanPage() {
         // 如果访问状态不存在或不可访问，重新检查
         if (!access || access.canAccess !== true) {
           access = await checkFeatureAccess('seo')
-          setFeatureAccess(prev => ({ ...prev, 'seo': access }))
+          setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'seo': access }))
         }
         if (access.canAccess === true) {
           optionsArray.push("seo")
@@ -328,7 +328,7 @@ export default function ScanPage() {
         // 如果访问状态不存在或不可访问，重新检查
         if (!access || access.canAccess !== true) {
           access = await checkFeatureAccess('security')
-          setFeatureAccess(prev => ({ ...prev, 'security': access }))
+          setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'security': access }))
         }
         if (access.canAccess === true) {
           optionsArray.push("security")
@@ -359,7 +359,7 @@ export default function ScanPage() {
         // 如果访问状态不存在或不可访问，重新检查
         if (!access || access.canAccess !== true) {
           access = await checkFeatureAccess('accessibility')
-          setFeatureAccess(prev => ({ ...prev, 'accessibility': access }))
+          setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'accessibility': access }))
         }
         if (access.canAccess === true) {
           optionsArray.push("accessibility")
@@ -390,7 +390,7 @@ export default function ScanPage() {
         // 如果访问状态不存在或不可访问，重新检查
         if (!access || access.canAccess !== true) {
           access = await checkFeatureAccess('ai-analysis')
-          setFeatureAccess(prev => ({ ...prev, 'ai-analysis': access }))
+          setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'ai-analysis': access }))
         }
         if (access.canAccess === true) {
           optionsArray.push("ai-analysis")
@@ -1059,15 +1059,12 @@ export default function ScanPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen font-sans selection:bg-tech-cyan selection:text-black">
-      <Header />
-      
-      <main className="flex-grow p-6 relative w-full">
-        {/* Floating background elements */}
-        <div className="absolute top-32 left-[10%] w-64 h-64 border border-tech-cyan/5 rounded-full animate-pulse-fast pointer-events-none"></div>
-        <div className="absolute bottom-20 right-[10%] w-48 h-48 border border-tech-blue/10 rounded-full animate-float pointer-events-none"></div>
+    <>
+      {/* Floating background elements */}
+      <div className="absolute top-32 left-[10%] w-64 h-64 border border-tech-cyan/5 rounded-full animate-pulse-fast pointer-events-none"></div>
+      <div className="absolute bottom-20 right-[10%] w-48 h-48 border border-tech-blue/10 rounded-full animate-float pointer-events-none"></div>
 
-        <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+      <div className="max-w-7xl mx-auto space-y-6 relative z-10">
           {/* Top Status Bar */}
           <div className="flex items-center justify-between mb-3 text-tech-cyan/80 text-[10px] font-mono tracking-widest">
             <span>SCAN_SESSION_ACTIVE</span>
@@ -1175,8 +1172,8 @@ export default function ScanPage() {
                         label={t("scan.optionLinkHealth")}
                         description="MODULE: LINK HEALTH"
                         checked={options.linkHealthCheck}
-                        onChange={(checked) => {
-                          setOptions(prev => {
+                        onChange={(checked: boolean) => {
+                          setOptions((prev: ScanOptions) => {
                             const newOptions = { ...prev, linkHealthCheck: checked }
                             // 如果启用页面链接检查，自动禁用全站链接检查
                             if (checked && prev.deepScan) {
@@ -1193,7 +1190,7 @@ export default function ScanPage() {
                         label={t("scan.optionWebsiteInfo")}
                         description="MODULE: WEBSITE INFO"
                         checked={options.websiteInfo}
-                        onChange={(checked) => setOptions(prev => ({ ...prev, websiteInfo: checked }))}
+                        onChange={(checked: boolean) => setOptions((prev: ScanOptions) => ({ ...prev, websiteInfo: checked }))}
                         disabled={state !== "idle"}
                         isFree={true}
                       />
@@ -1202,7 +1199,7 @@ export default function ScanPage() {
                         label={t("scan.optionSSLInfo")}
                         description="MODULE: SSL CERT"
                         checked={options.sslInfo}
-                        onChange={(checked) => setOptions(prev => ({ ...prev, sslInfo: checked }))}
+                        onChange={(checked: boolean) => setOptions((prev: ScanOptions) => ({ ...prev, sslInfo: checked }))}
                         disabled={state !== "idle"}
                         isFree={true}
                       />
@@ -1211,7 +1208,7 @@ export default function ScanPage() {
                         label={t("scan.optionDomainInfo")}
                         description="MODULE: DOMAIN INFO"
                         checked={options.domainInfo}
-                        onChange={(checked) => setOptions(prev => ({ ...prev, domainInfo: checked }))}
+                        onChange={(checked: boolean) => setOptions((prev: ScanOptions) => ({ ...prev, domainInfo: checked }))}
                         disabled={state !== "idle"}
                         isFree={true}
                       />
@@ -1220,7 +1217,7 @@ export default function ScanPage() {
                         label={t("scan.optionTechStack")}
                         description="MODULE: TECH STACK"
                         checked={options.techStack}
-                        onChange={(checked) => setOptions(prev => ({ ...prev, techStack: checked }))}
+                        onChange={(checked: boolean) => setOptions((prev: ScanOptions) => ({ ...prev, techStack: checked }))}
                         disabled={state !== "idle"}
                         isFree={true}
                       />
@@ -1229,7 +1226,7 @@ export default function ScanPage() {
                         label={t("scan.optionAIAnalysis")}
                         description="MODULE: AI ANALYSIS"
                         checked={options.aiAnalysis}
-                        onChange={async (checked) => {
+                        onChange={async (checked: boolean) => {
                           // 如果尝试开启付费功能，先检查访问权限
                           if (checked) {
                             let access = featureAccess['ai-analysis']
@@ -1239,7 +1236,7 @@ export default function ScanPage() {
                               // 重新检查访问权限
                               access = await checkFeatureAccess('ai-analysis')
                               // 更新访问状态
-                              setFeatureAccess(prev => ({ ...prev, 'ai-analysis': access }))
+                              setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'ai-analysis': access }))
                             }
                             
                             // 如果仍然不可访问，触发引导逻辑
@@ -1261,7 +1258,7 @@ export default function ScanPage() {
                             }
                           }
                           // 允许切换（关闭或已通过检查的开启）
-                          setOptions(prev => ({ ...prev, aiAnalysis: checked }))
+                          setOptions((prev: ScanOptions) => ({ ...prev, aiAnalysis: checked }))
                         }}
                         disabled={state !== "idle"}
                         creditsCost={featurePricing['ai-analysis']?.credits_cost}
@@ -1277,7 +1274,7 @@ export default function ScanPage() {
                           // 如果访问状态不存在，重新检查
                           if (!access) {
                             access = await checkFeatureAccess('ai-analysis')
-                            setFeatureAccess(prev => ({ ...prev, 'ai-analysis': access }))
+                            setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'ai-analysis': access }))
                           }
                           
                           if (access.reason === 'not_logged_in' || (!user && !access.canAccess)) {
@@ -1296,7 +1293,7 @@ export default function ScanPage() {
                         label={t("scan.optionPerformance")}
                         description="LIGHTHOUSE: PERFORMANCE"
                         checked={options.performance}
-                        onChange={async (checked) => {
+                        onChange={async (checked: boolean) => {
                           // 如果尝试开启付费功能，先检查访问权限
                           if (checked) {
                             let access = featureAccess['performance']
@@ -1306,7 +1303,7 @@ export default function ScanPage() {
                               // 重新检查访问权限
                               access = await checkFeatureAccess('performance')
                               // 更新访问状态
-                              setFeatureAccess(prev => ({ ...prev, 'performance': access }))
+                              setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'performance': access }))
                             }
                             
                             // 如果仍然不可访问，触发引导逻辑
@@ -1328,7 +1325,7 @@ export default function ScanPage() {
                             }
                           }
                           // 允许切换（关闭或已通过检查的开启）
-                          setOptions(prev => ({ ...prev, performance: checked }))
+                          setOptions((prev: ScanOptions) => ({ ...prev, performance: checked }))
                         }}
                         disabled={state !== "idle"}
                         creditsCost={featurePricing['performance']?.credits_cost}
@@ -1344,7 +1341,7 @@ export default function ScanPage() {
                           // 如果访问状态不存在，重新检查
                           if (!access) {
                             access = await checkFeatureAccess('performance')
-                            setFeatureAccess(prev => ({ ...prev, 'performance': access }))
+                            setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'performance': access }))
                           }
                           
                           if (access.reason === 'not_logged_in' || (!user && !access.canAccess)) {
@@ -1363,7 +1360,7 @@ export default function ScanPage() {
                         label={t("scan.optionSEO")}
                         description="LIGHTHOUSE: SEO"
                         checked={options.seo}
-                        onChange={async (checked) => {
+                        onChange={async (checked: boolean) => {
                           // 如果尝试开启付费功能，先检查访问权限
                           if (checked) {
                             let access = featureAccess['seo']
@@ -1373,7 +1370,7 @@ export default function ScanPage() {
                               // 重新检查访问权限
                               access = await checkFeatureAccess('seo')
                               // 更新访问状态
-                              setFeatureAccess(prev => ({ ...prev, 'seo': access }))
+                              setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'seo': access }))
                             }
                             
                             // 如果仍然不可访问，触发引导逻辑
@@ -1395,7 +1392,7 @@ export default function ScanPage() {
                             }
                           }
                           // 允许切换（关闭或已通过检查的开启）
-                          setOptions(prev => ({ ...prev, seo: checked }))
+                          setOptions((prev: ScanOptions) => ({ ...prev, seo: checked }))
                         }}
                         disabled={state !== "idle"}
                         creditsCost={featurePricing['seo']?.credits_cost}
@@ -1411,7 +1408,7 @@ export default function ScanPage() {
                           // 如果访问状态不存在，重新检查
                           if (!access) {
                             access = await checkFeatureAccess('seo')
-                            setFeatureAccess(prev => ({ ...prev, 'seo': access }))
+                            setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'seo': access }))
                           }
                           
                           if (access.reason === 'not_logged_in' || (!user && !access.canAccess)) {
@@ -1430,7 +1427,7 @@ export default function ScanPage() {
                         label={t("scan.optionSecurity")}
                         description="LIGHTHOUSE: SECURITY"
                         checked={options.security}
-                        onChange={async (checked) => {
+                        onChange={async (checked: boolean) => {
                           // 如果尝试开启付费功能，先检查访问权限
                           if (checked) {
                             let access = featureAccess['security']
@@ -1440,7 +1437,7 @@ export default function ScanPage() {
                               // 重新检查访问权限
                               access = await checkFeatureAccess('security')
                               // 更新访问状态
-                              setFeatureAccess(prev => ({ ...prev, 'security': access }))
+                              setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'security': access }))
                             }
                             
                             // 如果仍然不可访问，触发引导逻辑
@@ -1462,7 +1459,7 @@ export default function ScanPage() {
                             }
                           }
                           // 允许切换（关闭或已通过检查的开启）
-                          setOptions(prev => ({ ...prev, security: checked }))
+                          setOptions((prev: ScanOptions) => ({ ...prev, security: checked }))
                         }}
                         disabled={state !== "idle"}
                         creditsCost={featurePricing['security']?.credits_cost}
@@ -1478,7 +1475,7 @@ export default function ScanPage() {
                           // 如果访问状态不存在，重新检查
                           if (!access) {
                             access = await checkFeatureAccess('security')
-                            setFeatureAccess(prev => ({ ...prev, 'security': access }))
+                            setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'security': access }))
                           }
                           
                           if (access.reason === 'not_logged_in' || (!user && !access.canAccess)) {
@@ -1497,7 +1494,7 @@ export default function ScanPage() {
                         label={t("scan.optionAccessibility")}
                         description="LIGHTHOUSE: A11Y"
                         checked={options.accessibility}
-                        onChange={async (checked) => {
+                        onChange={async (checked: boolean) => {
                           // 如果尝试开启付费功能，先检查访问权限
                           if (checked) {
                             let access = featureAccess['accessibility']
@@ -1507,7 +1504,7 @@ export default function ScanPage() {
                               // 重新检查访问权限
                               access = await checkFeatureAccess('accessibility')
                               // 更新访问状态
-                              setFeatureAccess(prev => ({ ...prev, 'accessibility': access }))
+                              setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'accessibility': access }))
                             }
                             
                             // 如果仍然不可访问，触发引导逻辑
@@ -1529,7 +1526,7 @@ export default function ScanPage() {
                             }
                           }
                           // 允许切换（关闭或已通过检查的开启）
-                          setOptions(prev => ({ ...prev, accessibility: checked }))
+                          setOptions((prev: ScanOptions) => ({ ...prev, accessibility: checked }))
                         }}
                         disabled={state !== "idle"}
                         creditsCost={featurePricing['accessibility']?.credits_cost}
@@ -1545,7 +1542,7 @@ export default function ScanPage() {
                           // 如果访问状态不存在，重新检查
                           if (!access) {
                             access = await checkFeatureAccess('accessibility')
-                            setFeatureAccess(prev => ({ ...prev, 'accessibility': access }))
+                            setFeatureAccess((prev: Record<string, FeatureAccessResult>) => ({ ...prev, 'accessibility': access }))
                           }
                           
                           if (access.reason === 'not_logged_in' || (!user && !access.canAccess)) {
@@ -1966,8 +1963,27 @@ export default function ScanPage() {
             </div>
           </div>
         </div>
-      </main>
+    </>
+  )
+}
 
+export default function ScanPage() {
+  return (
+    <div className="flex flex-col min-h-screen font-sans selection:bg-tech-cyan selection:text-black">
+      <Header />
+      <main className="flex-grow p-6 relative w-full">
+        <Suspense fallback={
+          <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+            <div className="bg-tech-bg/80 backdrop-blur-xl border border-tech-border/40 clip-tech-panel p-8">
+              <div className="text-center text-tech-cyan/70 font-mono">
+                <p>Loading scan page...</p>
+              </div>
+            </div>
+          </div>
+        }>
+          <ScanPageContent />
+        </Suspense>
+      </main>
       <Footer />
     </div>
   )
