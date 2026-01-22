@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -22,16 +22,7 @@ export default function ApiPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasAccess, setHasAccess] = useState(false);
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.push('/login?redirect=/api');
-      return;
-    }
-    checkAccessAndLoadData();
-  }, [user, authLoading, router]);
-
-  const checkAccessAndLoadData = async () => {
+  const checkAccessAndLoadData = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
@@ -59,7 +50,16 @@ export default function ApiPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, t]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.push('/login?redirect=/api');
+      return;
+    }
+    checkAccessAndLoadData();
+  }, [user, authLoading, router, checkAccessAndLoadData]);
 
   if (authLoading) {
     return (

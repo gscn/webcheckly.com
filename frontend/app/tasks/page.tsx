@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -39,17 +39,7 @@ export default function TasksPage() {
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const limit = 20;
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.push('/login?redirect=/tasks');
-      return;
-    }
-    loadTasks();
-    loadSubscriptionInfo();
-  }, [user, authLoading, page, statusFilter, searchQuery, router]);
-
-  const loadSubscriptionInfo = async () => {
+  const loadSubscriptionInfo = useCallback(async () => {
     try {
       const [sub, plansData] = await Promise.all([
         getUserSubscription(),
@@ -60,23 +50,9 @@ export default function TasksPage() {
     } catch (err) {
       console.error('Failed to load subscription info:', err);
     }
-  };
+  }, []);
 
-  const getRetentionPeriod = () => {
-    if (!subscription || subscription.status !== 'active') {
-      return { days: 24, unit: 'hours', text: '24小时' };
-    }
-    const plan = plans.find((p) => p.plan_type === subscription.plan_type);
-    if (!plan) {
-      return { days: 24, unit: 'hours', text: '24小时' };
-    }
-    if (plan.task_history_days === -1) {
-      return { days: -1, unit: 'permanent', text: '永久' };
-    }
-    return { days: plan.task_history_days, unit: 'days', text: `${plan.task_history_days}天` };
-  };
-
-  const loadTasks = async (isRefresh = false) => {
+  const loadTasks = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
     } else {
@@ -149,7 +125,32 @@ export default function TasksPage() {
       setLoading(false);
       setRefreshing(false);
     }
+  }, [page, limit, statusFilter, searchQuery, t, router]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.push('/login?redirect=/tasks');
+      return;
+    }
+    loadTasks();
+    loadSubscriptionInfo();
+  }, [user, authLoading, router, loadTasks, loadSubscriptionInfo]);
+
+  const getRetentionPeriod = () => {
+    if (!subscription || subscription.status !== 'active') {
+      return { days: 24, unit: 'hours', text: '24小时' };
+    }
+    const plan = plans.find((p) => p.plan_type === subscription.plan_type);
+    if (!plan) {
+      return { days: 24, unit: 'hours', text: '24小时' };
+    }
+    if (plan.task_history_days === -1) {
+      return { days: -1, unit: 'permanent', text: '永久' };
+    }
+    return { days: plan.task_history_days, unit: 'days', text: `${plan.task_history_days}天` };
   };
+
 
   const getStatusColor = (status: string) => {
     switch (status) {

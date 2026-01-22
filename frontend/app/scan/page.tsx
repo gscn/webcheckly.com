@@ -18,15 +18,18 @@ import {
   AccessibilityInfo
 } from "@/types/scan"
 import { lazy, Suspense } from "react"
+
+// 简单的加载占位符组件
+const LoadingPlaceholder = () => (
+  <div className="p-4 bg-tech-surface/50 border border-tech-border/30 rounded-lg animate-pulse">
+    <div className="h-4 bg-tech-cyan/20 rounded w-3/4 mb-2"></div>
+    <div className="h-4 bg-tech-cyan/10 rounded w-1/2"></div>
+  </div>
+)
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-import ResultTable from "@/components/ResultTable"
 import ProgressBar from "@/components/ProgressBar"
-import ReportSummary from "@/components/ReportSummary"
-import ReportActions from "@/components/ReportActions"
 import ScanOptionToggle from "@/components/ScanOptionToggle"
-import InfoCard, { InfoItem } from "@/components/InfoCard"
-import ModuleStatus from "@/components/ModuleStatus"
 
 // 懒加载大型组件
 const AIAnalysisReport = lazy(() => import("@/components/AIAnalysisReport"))
@@ -34,6 +37,14 @@ const PerformanceCard = lazy(() => import("@/components/PerformanceCard"))
 const SEOComplianceCard = lazy(() => import("@/components/SEOComplianceCard"))
 const SecurityPanel = lazy(() => import("@/components/SecurityPanel"))
 const AccessibilityCard = lazy(() => import("@/components/AccessibilityCard"))
+const ResultTable = lazy(() => import("@/components/ResultTable"))
+const ReportSummary = lazy(() => import("@/components/ReportSummary"))
+const ReportActions = lazy(() => import("@/components/ReportActions"))
+const InfoCard = lazy(() => import("@/components/InfoCard").then(module => ({ default: module.default })))
+const ModuleStatus = lazy(() => import("@/components/ModuleStatus"))
+
+// InfoItem 使用频繁，保持直接导入
+import { InfoItem } from "@/components/InfoCard"
 import { API_BASE_URL, debugError } from "@/utils/config"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { useAuth } from "@/contexts/AuthContext"
@@ -783,7 +794,8 @@ export default function ScanPage() {
         stopPollingRef.current = null
       }
     }
-  }, [url, options, aiMode, locale, t])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, options, aiMode, locale, t, router, user, featureAccess, checkFeatureAccess])
 
   // 加载用户信息和功能定价
   useEffect(() => {
@@ -1585,7 +1597,9 @@ export default function ScanPage() {
                   <>
                     <ProgressBar progress={progress} />
                     {Object.keys(moduleStatuses).length > 0 && (
-                      <ModuleStatus modules={moduleStatuses} />
+                      <Suspense fallback={<LoadingPlaceholder />}>
+                        <ModuleStatus modules={moduleStatuses} />
+                      </Suspense>
                     )}
                   </>
                 )}
@@ -1673,17 +1687,19 @@ export default function ScanPage() {
                 {/* Website Info - 单独一行显示（内容较多） */}
                 {websiteInfo && (
                   <div className="mt-6 animate-fade-in">
-                    <InfoCard title={t("scan.cardWebsiteInfo")} icon="🌐">
-                      <InfoItem label={t("scan.labelTitle")} value={websiteInfo.title} highlight />
-                      <InfoItem label={t("scan.labelDescription")} value={websiteInfo.description} />
-                      <InfoItem label={t("scan.labelKeywords")} value={websiteInfo.keywords} />
-                      <InfoItem label={t("scan.labelLanguage")} value={websiteInfo.language} />
-                      <InfoItem label={t("scan.labelCharset")} value={websiteInfo.charset} />
-                      <InfoItem label={t("scan.labelAuthor")} value={websiteInfo.author} />
-                      <InfoItem label={t("scan.labelGenerator")} value={websiteInfo.generator} />
-                      <InfoItem label={t("scan.labelViewport")} value={websiteInfo.viewport} />
-                      <InfoItem label={t("scan.labelRobots")} value={websiteInfo.robots} />
-                    </InfoCard>
+                    <Suspense fallback={<LoadingPlaceholder />}>
+                      <InfoCard title={t("scan.cardWebsiteInfo")} icon="🌐">
+                        <InfoItem label={t("scan.labelTitle")} value={websiteInfo.title} highlight />
+                        <InfoItem label={t("scan.labelDescription")} value={websiteInfo.description} />
+                        <InfoItem label={t("scan.labelKeywords")} value={websiteInfo.keywords} />
+                        <InfoItem label={t("scan.labelLanguage")} value={websiteInfo.language} />
+                        <InfoItem label={t("scan.labelCharset")} value={websiteInfo.charset} />
+                        <InfoItem label={t("scan.labelAuthor")} value={websiteInfo.author} />
+                        <InfoItem label={t("scan.labelGenerator")} value={websiteInfo.generator} />
+                        <InfoItem label={t("scan.labelViewport")} value={websiteInfo.viewport} />
+                        <InfoItem label={t("scan.labelRobots")} value={websiteInfo.robots} />
+                      </InfoCard>
+                    </Suspense>
                   </div>
                 )}
 
@@ -1691,7 +1707,8 @@ export default function ScanPage() {
                 {(domainInfo || sslInfo || techStack) && (
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 animate-fade-in">
                     {sslInfo && (
-                      <InfoCard title={t("scan.cardSSLInfo")} icon="🔒">
+                      <Suspense fallback={<LoadingPlaceholder />}>
+                        <InfoCard title={t("scan.cardSSLInfo")} icon="🔒">
                         <InfoItem label={t("scan.labelIssuer")} value={sslInfo.issuer} highlight />
                         <InfoItem label={t("scan.labelSubject")} value={sslInfo.subject} />
                         <InfoItem label={t("scan.labelCommonName")} value={sslInfo.common_name} />
@@ -1726,10 +1743,12 @@ export default function ScanPage() {
                           <InfoItem label={t("scan.labelProvince")} value={sslInfo.province} />
                         )}
                       </InfoCard>
+                      </Suspense>
                     )}
 
                     {domainInfo && (
-                      <InfoCard title={t("scan.cardDomainInfo")} icon="🌍">
+                      <Suspense fallback={<LoadingPlaceholder />}>
+                        <InfoCard title={t("scan.cardDomainInfo")} icon="🌍">
                         <InfoItem label={t("scan.labelDomain")} value={domainInfo.domain} highlight />
                         <InfoItem label={t("scan.labelIP")} value={domainInfo.ip} highlight />
                         <InfoItem label={t("scan.labelIPv4")} value={domainInfo.ipv4} />
@@ -1752,10 +1771,12 @@ export default function ScanPage() {
                         <InfoItem label={t("scan.labelISP")} value={domainInfo.isp} />
                         <InfoItem label={t("scan.labelOrganization")} value={domainInfo.organization} />
                       </InfoCard>
+                      </Suspense>
                     )}
 
                     {techStack && (
-                      <InfoCard title={t("scan.cardTechStack")} icon="⚙️">
+                      <Suspense fallback={<LoadingPlaceholder />}>
+                        <InfoCard title={t("scan.cardTechStack")} icon="⚙️">
                         {/* ... existing techStack InfoItem entries ... */}
                         {techStack.server && (
                           <InfoItem label={t("scan.labelWebServer")} value={techStack.server} highlight />
@@ -1829,6 +1850,7 @@ export default function ScanPage() {
                           </div>
                         )}
                       </InfoCard>
+                      </Suspense>
                     )}
                   </div>
                 )}
@@ -1869,16 +1891,21 @@ export default function ScanPage() {
 
                 {/* AI 分析报告 */}
                 {aiAnalysis && state === "done" && (
-                  <Suspense fallback={<div className="p-4 bg-tech-surface/50 border border-tech-border/30 rounded-lg animate-pulse">加载中...</div>}>
+                  <Suspense fallback={<LoadingPlaceholder />}>
                     <AIAnalysisReport analysis={aiAnalysis} />
                   </Suspense>
                 )}
 
                 {state === "done" && (
                   <div className="space-y-4 animate-fade-in mt-6">
-                    <ReportSummary results={results} />
-                    <ResultTable results={results} />
-                    <ReportActions 
+                    <Suspense fallback={<LoadingPlaceholder />}>
+                      <ReportSummary results={results} />
+                    </Suspense>
+                    <Suspense fallback={<LoadingPlaceholder />}>
+                      <ResultTable results={results} />
+                    </Suspense>
+                    <Suspense fallback={<LoadingPlaceholder />}>
+                      <ReportActions 
                       target={url!} 
                       results={results}
                       websiteInfo={websiteInfo}
@@ -1891,6 +1918,7 @@ export default function ScanPage() {
                       security={securityRisk}
                       accessibility={accessibility}
                     />
+                    </Suspense>
                     <div className="flex gap-4">
                       <button
                         onClick={() => {

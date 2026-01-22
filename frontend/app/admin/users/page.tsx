@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   getUsersList,
@@ -30,11 +30,7 @@ export default function AdminUsersPage() {
   const [editEmail, setEditEmail] = useState('');
   const [editEmailVerified, setEditEmailVerified] = useState(false);
 
-  useEffect(() => {
-    loadUsers();
-  }, [page, search]);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -47,7 +43,11 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, search, t]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {

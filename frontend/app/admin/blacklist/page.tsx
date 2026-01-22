@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   createWebsiteBlacklist,
@@ -35,18 +35,7 @@ export default function AdminBlacklistPage() {
   const [availableUsers, setAvailableUsers] = useState<AdminUser[]>([]);
   const [showUserSelect, setShowUserSelect] = useState(false);
 
-  useEffect(() => {
-    if (activeTab === 'websites') {
-      loadWebsiteBlacklist();
-    } else {
-      loadUserBlacklist();
-      if (showAddModal && availableUsers.length === 0) {
-        loadUsers();
-      }
-    }
-  }, [page, search, activeTab]);
-
-  const loadWebsiteBlacklist = async () => {
+  const loadWebsiteBlacklist = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -59,9 +48,9 @@ export default function AdminBlacklistPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, search, t]);
 
-  const loadUserBlacklist = async () => {
+  const loadUserBlacklist = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -74,16 +63,27 @@ export default function AdminBlacklistPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, search, t]);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const data = await getUsersList(1, 100, '');
       setAvailableUsers(data.users);
     } catch (err: any) {
       console.error('Failed to load users:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'websites') {
+      loadWebsiteBlacklist();
+    } else {
+      loadUserBlacklist();
+      if (showAddModal && availableUsers.length === 0) {
+        loadUsers();
+      }
+    }
+  }, [page, search, activeTab, loadWebsiteBlacklist, loadUserBlacklist, loadUsers, showAddModal, availableUsers.length]);
 
   const handleAddWebsite = async () => {
     if (!addTarget.trim()) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,16 +21,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.push('/login?redirect=/dashboard');
-      return;
-    }
-    loadData();
-  }, [user, authLoading, router]);
-
-  const loadData = async (isRefresh = false) => {
+  const loadData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
     } else {
@@ -48,7 +39,16 @@ export default function DashboardPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.push('/login?redirect=/dashboard');
+      return;
+    }
+    loadData();
+  }, [user, authLoading, router, loadData]);
 
   const getPlanLimit = (planType: string | undefined, plans: Record<string, PricingPlan>): number => {
     if (!planType) return 0;

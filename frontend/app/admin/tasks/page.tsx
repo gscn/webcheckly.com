@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   getTasksList,
@@ -21,11 +21,7 @@ export default function AdminTasksPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [userIdFilter, setUserIdFilter] = useState('');
 
-  useEffect(() => {
-    loadTasks();
-  }, [page, statusFilter, userIdFilter]);
-
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -41,7 +37,11 @@ export default function AdminTasksPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, statusFilter, userIdFilter, t]);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
 
   const handleDelete = async (taskId: string) => {
     if (!confirm(t('admin.tasks.confirmDelete'))) {

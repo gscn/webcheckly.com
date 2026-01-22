@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   getSubscriptionsList,
@@ -21,11 +21,7 @@ export default function AdminSubscriptionsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [planTypeFilter, setPlanTypeFilter] = useState('');
 
-  useEffect(() => {
-    loadSubscriptions();
-  }, [page, statusFilter, planTypeFilter]);
-
-  const loadSubscriptions = async () => {
+  const loadSubscriptions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -41,7 +37,11 @@ export default function AdminSubscriptionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, statusFilter, planTypeFilter, t]);
+
+  useEffect(() => {
+    loadSubscriptions();
+  }, [loadSubscriptions]);
 
   const handleStatusChange = async (subscriptionId: string, newStatus: string) => {
     try {

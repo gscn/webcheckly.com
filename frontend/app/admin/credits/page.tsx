@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   adjustUserCredits,
@@ -41,11 +41,7 @@ export default function AdminCreditsPage() {
   const [adjustSuccess, setAdjustSuccess] = useState(false);
   const [showAdjustForm, setShowAdjustForm] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [page, dateRange, startDate, endDate, userId, featureType, isFree, isRefunded]);
-
-  const getDateRange = () => {
+  const getDateRange = useCallback(() => {
     const now = new Date();
     let start: Date;
     let end: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
@@ -82,9 +78,9 @@ export default function AdminCreditsPage() {
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0],
     };
-  };
+  }, [dateRange, startDate, endDate]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -115,7 +111,11 @@ export default function AdminCreditsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, userId, featureType, isFree, isRefunded, t, getDateRange]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleAdjust = async (e: React.FormEvent) => {
     e.preventDefault();

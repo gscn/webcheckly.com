@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,11 +29,7 @@ export default function PricingPage() {
   // 默认使用PayPal支付
   const paymentMethod: 'paypal' = 'paypal';
 
-  useEffect(() => {
-    loadData();
-  }, [user]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -51,7 +47,11 @@ export default function PricingPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, t]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleSubscribe = async (planType: string) => {
     if (!user) {

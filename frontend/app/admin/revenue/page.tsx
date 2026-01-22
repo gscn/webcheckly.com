@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   getRevenueOrders,
@@ -32,11 +32,7 @@ export default function AdminRevenuePage() {
   const [status, setStatus] = useState('paid'); // 默认只显示已支付订单
   const [exporting, setExporting] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [page, dateRange, startDate, endDate, paymentMethod, orderType, status]);
-
-  const getDateRange = () => {
+  const getDateRange = useCallback(() => {
     const now = new Date();
     let start: Date;
     let end: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
@@ -73,9 +69,9 @@ export default function AdminRevenuePage() {
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0],
     };
-  };
+  }, [dateRange, startDate, endDate]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -105,7 +101,11 @@ export default function AdminRevenuePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, paymentMethod, orderType, status, t, getDateRange]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleExport = async (format: 'csv' | 'excel') => {
     try {
