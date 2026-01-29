@@ -16,6 +16,15 @@ import (
 var paypalClient *PayPalClient
 var paypalInitialized bool
 
+// sanitizePayPalURL 清理从环境变量读取的 URL：去除首尾空格及同一行误入的注释（# 及之后）
+func sanitizePayPalURL(s string) string {
+	s = strings.TrimSpace(s)
+	if i := strings.Index(s, " #"); i >= 0 {
+		s = strings.TrimSpace(s[:i])
+	}
+	return s
+}
+
 // PayPalClient PayPal客户端
 type PayPalClient struct {
 	ClientID     string
@@ -227,11 +236,24 @@ func CreatePayPalOrder(orderID string, amountUSD float64, description string) (s
 		return "", "", fmt.Errorf("failed to refresh access token: %w", err)
 	}
 
-	successURL := os.Getenv("PAYPAL_SUCCESS_URL")
+	successURL := sanitizePayPalURL(os.Getenv("PAYPAL_PAYMENT_SUCCESS_URL"))
+	if successURL == "" {
+		successURL = sanitizePayPalURL(os.Getenv("PAYPAL_SUCCESS_URL"))
+	}
 	if successURL == "" {
 		successURL = "http://localhost:3000/payment/success?order_id=" + orderID
+	} else {
+		// 支持 {ORDER_ID} 占位符或 URL 以 ?order_id= 结尾时追加我们的订单 ID
+		if strings.Contains(successURL, "{ORDER_ID}") {
+			successURL = strings.ReplaceAll(successURL, "{ORDER_ID}", orderID)
+		} else if strings.HasSuffix(successURL, "?order_id=") || strings.HasSuffix(successURL, "&order_id=") {
+			successURL = successURL + orderID
+		}
 	}
-	cancelURL := os.Getenv("PAYPAL_CANCEL_URL")
+	cancelURL := sanitizePayPalURL(os.Getenv("PAYPAL_PAYMENT_CANCEL_URL"))
+	if cancelURL == "" {
+		cancelURL = os.Getenv("PAYPAL_CANCEL_URL")
+	}
 	if cancelURL == "" {
 		cancelURL = "http://localhost:3000/payment/cancel"
 	}
@@ -381,7 +403,10 @@ func CreatePayPalSubscription(userID string, planType models.SubscriptionPlan) (
 	}
 
 	// 修复return_url，不能使用占位符，使用固定URL
-	successURL := os.Getenv("PAYPAL_SUCCESS_URL")
+	successURL := sanitizePayPalURL(os.Getenv("PAYPAL_SUBSCRIPTION_SUCCESS_URL"))
+	if successURL == "" {
+		successURL = sanitizePayPalURL(os.Getenv("PAYPAL_SUCCESS_URL"))
+	}
 	if successURL == "" {
 		successURL = "http://localhost:3000/subscription/success"
 	}
@@ -389,7 +414,10 @@ func CreatePayPalSubscription(userID string, planType models.SubscriptionPlan) (
 	successURL = strings.ReplaceAll(successURL, "{subscription_id}", "")
 	successURL = strings.ReplaceAll(successURL, "{{subscription_id}}", "")
 
-	cancelURL := os.Getenv("PAYPAL_CANCEL_URL")
+	cancelURL := sanitizePayPalURL(os.Getenv("PAYPAL_SUBSCRIPTION_CANCEL_URL"))
+	if cancelURL == "" {
+		cancelURL = sanitizePayPalURL(os.Getenv("PAYPAL_CANCEL_URL"))
+	}
 	if cancelURL == "" {
 		cancelURL = "http://localhost:3000/subscription/cancel"
 	}
@@ -648,39 +676,10 @@ func VerifyPayPalWebhook(headers map[string]string, body []byte) (bool, error) {
 	return true, nil
 }
 
-// ProcessPayPalWebhookEvent 处理PayPal webhook事件
+// ProcessPayPalWebhookEvent 仅做幂等检查：是否已处理过该事件。
+// 返回 (true, nil) 表示已处理，调用方应跳过业务逻辑；否则 (false, nil)。
+// 具体业务处理由 routes.PayPalWebhookHandler 完成。
 func ProcessPayPalWebhookEvent(event *PayPalWebhookEvent) (bool, error) {
-	// 检查事件是否已处理（幂等性）
-	// 实际实现中应该在数据库中记录已处理的事件ID
 	processed, _ := ProcessWebhookEvent(event.ID)
-	if processed {
-		return true, nil
-	}
-
-	// 根据事件类型处理
-	switch event.EventType {
-	case "PAYMENT.CAPTURE.COMPLETED":
-		// 处理支付完成
-		var resource map[string]interface{}
-		if err := json.Unmarshal(event.Resource, &resource); err != nil {
-			return false, fmt.Errorf("failed to unmarshal resource: %w", err)
-		}
-
-		// 从resource中提取订单ID和支付ID
-		// 实际实现中需要根据PayPal的响应结构解析
-		_ = resource
-		return true, nil
-
-	case "BILLING.SUBSCRIPTION.CREATED", "BILLING.SUBSCRIPTION.ACTIVATED":
-		// 处理订阅创建/激活
-		return true, nil
-
-	case "BILLING.SUBSCRIPTION.CANCELLED", "BILLING.SUBSCRIPTION.EXPIRED":
-		// 处理订阅取消/过期
-		return true, nil
-
-	default:
-		// 其他事件类型
-		return true, nil
-	}
+	return processed, nil
 }

@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"os/exec"
+	"os/user"
 	"strings"
 	"time"
 
@@ -56,9 +58,16 @@ func RunKatana(ctx context.Context, targetURL string, taskID string, taskManager
 	// 注意：某些版本的katana可能不支持 -p 和 -f 参数，已移除以避免错误
 	// 注意：如果Katana版本支持表单发现，可能需要使用 --forms 长格式或特定版本
 	depthStr := fmt.Sprintf("%d", crawlDepth)
+
+	// 查找 katana 命令路径
+	katanaPath, err := findCommand("katana")
+	if err != nil {
+		return nil, fmt.Errorf("katana command not found: %w. Please ensure katana is installed and in PATH", err)
+	}
+
 	cmd := exec.CommandContext(
 		ctx,
-		"katana",
+		katanaPath,
 		"-u", targetURL,
 		"-j",           // JSON Lines 输出格式
 		"-or",          // 省略原始请求/响应数据
@@ -72,6 +81,21 @@ func RunKatana(ctx context.Context, targetURL string, taskID string, taskManager
 		// 注意：-rd 只接受整数秒，100ms 延迟太小，使用默认行为（无延迟）或设置为 0
 		// "-rd", "0", // 请求延迟（秒，只接受整数）
 	)
+
+	// 设置环境变量（Katana 需要 HOME 环境变量）
+	cmd.Env = os.Environ()
+	if homeDir := os.Getenv("HOME"); homeDir == "" {
+		// 如果 HOME 未设置，尝试从用户信息获取
+		if currentUser, err := user.Current(); err == nil {
+			homeDir = currentUser.HomeDir
+			cmd.Env = append(cmd.Env, fmt.Sprintf("HOME=%s", homeDir))
+			log.Printf("[Katana] Set HOME environment variable to: %s", homeDir)
+		} else {
+			// 如果无法获取用户信息，使用 /tmp 作为临时 HOME
+			cmd.Env = append(cmd.Env, "HOME=/tmp")
+			log.Printf("[Katana] Warning: HOME not set, using /tmp as fallback")
+		}
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -362,6 +386,15 @@ func RunKatana(ctx context.Context, targetURL string, taskID string, taskManager
 
 	if waitErr != nil {
 		log.Printf("[Katana] Katana process exited with error: %v", waitErr)
+		// 记录所有 stderr 内容（用于调试）
+		if len(stderrLines) > 0 {
+			// 只记录前10行，避免日志过长
+			maxLines := 10
+			if len(stderrLines) < maxLines {
+				maxLines = len(stderrLines)
+			}
+			log.Printf("[Katana] Stderr output (last %d lines): %v", maxLines, stderrLines[len(stderrLines)-maxLines:])
+		}
 		// 如果有真正的错误信息，记录它
 		if hasRealError {
 			log.Printf("[Katana] Real errors in stderr: %v", errorMessages)

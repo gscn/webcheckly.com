@@ -101,6 +101,11 @@ func CreateSubscriptionHandler(c *fiber.Ctx) error {
 			"error": "Invalid request body",
 		})
 	}
+	if req.PlanType == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "plan_type is required",
+		})
+	}
 
 	planType := models.SubscriptionPlan(req.PlanType)
 	if planType != models.SubscriptionPlanBasic &&

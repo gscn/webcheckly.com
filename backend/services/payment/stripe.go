@@ -33,11 +33,17 @@ func CreateCheckoutSession(orderID string, amountUSD float64, description string
 		}
 	}
 
-	successURL := os.Getenv("STRIPE_SUCCESS_URL")
+	successURL := os.Getenv("STRIPE_PAYMENT_SUCCESS_URL")
+	if successURL == "" {
+		successURL = os.Getenv("STRIPE_SUCCESS_URL")
+	}
 	if successURL == "" {
 		successURL = "http://localhost:3000/payment/success?session_id={CHECKOUT_SESSION_ID}"
 	}
-	cancelURL := os.Getenv("STRIPE_CANCEL_URL")
+	cancelURL := os.Getenv("STRIPE_PAYMENT_CANCEL_URL")
+	if cancelURL == "" {
+		cancelURL = os.Getenv("STRIPE_CANCEL_URL")
+	}
 	if cancelURL == "" {
 		cancelURL = "http://localhost:3000/payment/cancel"
 	}
@@ -111,6 +117,27 @@ func VerifyPayment(paymentIntentID string) (bool, error) {
 	return pi.Status == stripe.PaymentIntentStatusSucceeded, nil
 }
 
+// GetStripeSessionOrderID 根据 Checkout Session ID 获取关联的订单 ID（来自 metadata）
+func GetStripeSessionOrderID(sessionID string) (string, error) {
+	if !stripeInitialized {
+		if err := InitStripe(); err != nil {
+			return "", fmt.Errorf("Stripe is not configured: %w", err)
+		}
+	}
+
+	sess, err := session.Get(sessionID, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to get checkout session: %w", err)
+	}
+
+	orderID := sess.Metadata["order_id"]
+	if orderID == "" {
+		return "", fmt.Errorf("checkout session has no order_id in metadata")
+	}
+
+	return orderID, nil
+}
+
 // CreateSubscriptionCheckout 创建订阅Checkout
 func CreateSubscriptionCheckout(userID string, planType models.SubscriptionPlan) (string, error) {
 	if !stripeInitialized {
@@ -129,11 +156,17 @@ func CreateSubscriptionCheckout(userID string, planType models.SubscriptionPlan)
 		}
 	}
 
-	successURL := os.Getenv("STRIPE_SUCCESS_URL")
+	successURL := os.Getenv("STRIPE_SUBSCRIPTION_SUCCESS_URL")
+	if successURL == "" {
+		successURL = os.Getenv("STRIPE_SUCCESS_URL")
+	}
 	if successURL == "" {
 		successURL = "http://localhost:3000/subscription/success?session_id={CHECKOUT_SESSION_ID}"
 	}
-	cancelURL := os.Getenv("STRIPE_CANCEL_URL")
+	cancelURL := os.Getenv("STRIPE_SUBSCRIPTION_CANCEL_URL")
+	if cancelURL == "" {
+		cancelURL = os.Getenv("STRIPE_CANCEL_URL")
+	}
 	if cancelURL == "" {
 		cancelURL = "http://localhost:3000/subscription/cancel"
 	}

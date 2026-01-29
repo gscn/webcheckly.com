@@ -176,11 +176,19 @@ backend/
    httpx -version
    ```
 
-4. **深度检查工具**（可选，用于网站链接深度检查功能）
+4. **深度检查工具**（必需，用于网站链接深度检查功能）
    - **katana**：深度链接检查工具
      - 下载地址：https://github.com/projectdiscovery/katana
      - 安装：`go install github.com/projectdiscovery/katana/cmd/katana@latest`
      - 验证：`katana -version`
+     - **注意**：如果使用预编译二进制，确保 `katana` 在系统 PATH 中
+
+5. **Lighthouse**（必需，用于性能/SEO/安全/可访问性检测）
+   - 下载地址：https://github.com/GoogleChrome/lighthouse
+   - 安装：`npm install -g lighthouse`
+   - 前置要求：需要安装 Node.js (LTS 版本)
+   - 验证：`lighthouse --version`
+   - **注意**：Lighthouse 需要 Chrome/Chromium，会自动下载 Chromium
 
 ### 安装依赖
 
@@ -397,8 +405,21 @@ swag init -g main.go -o docs
 **支付接口**：
 - **POST /api/payment/create-checkout** - 创建支付会话（需要认证）
 - **GET /api/payment/verify/:orderId** - 验证支付（需要认证）
+- **POST /api/payment/confirm** - 确认支付 / PayPal capture（success 页回调时调用，需要认证）
+- **GET /api/payment/verify-session?session_id=** - 按 Stripe Checkout session_id 验证（需要认证）
 - **POST /api/payment/webhook** - Stripe Webhook（无需认证）
 - **POST /api/payment/paypal-webhook** - PayPal Webhook（无需认证）
+
+**Success / Cancel URL 环境变量**（可选，未设置则用默认 localhost:3000 路径）：
+- `STRIPE_PAYMENT_SUCCESS_URL` / `STRIPE_PAYMENT_CANCEL_URL`（一次性支付）
+- `STRIPE_SUBSCRIPTION_SUCCESS_URL` / `STRIPE_SUBSCRIPTION_CANCEL_URL`（订阅）
+- `PAYPAL_PAYMENT_SUCCESS_URL` / `PAYPAL_PAYMENT_CANCEL_URL`（一次性支付）
+- `PAYPAL_SUBSCRIPTION_SUCCESS_URL` / `PAYPAL_SUBSCRIPTION_CANCEL_URL`（订阅）
+- 兼容旧变量：`STRIPE_SUCCESS_URL`、`STRIPE_CANCEL_URL`、`PAYPAL_SUCCESS_URL`、`PAYPAL_CANCEL_URL` 作为上述未设置时的回退
+
+**PayPal 一次性支付 success URL**：须包含我方订单 ID，供前端 `/payment/success` 校验与 confirm。支持两种写法：
+- 占位符：`https://yoursite.com/payment/success?order_id={ORDER_ID}`（后端替换）
+- 尾部 `=`：`https://yoursite.com/payment/success?order_id=`（后端追加订单 ID）
 
 **定价接口**：
 - **GET /api/pricing/features** - 获取功能定价列表

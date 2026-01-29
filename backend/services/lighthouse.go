@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -56,7 +57,13 @@ func RunLighthouse(target string, lang string) (*FullLighthouseReport, error) {
 		locale = "zh-CN"
 	}
 
-	cmd := exec.Command("lighthouse",
+	// 查找 lighthouse 命令路径
+	lighthousePath, err := findCommand("lighthouse")
+	if err != nil {
+		return nil, fmt.Errorf("lighthouse command not found: %w. Please ensure lighthouse is installed and in PATH", err)
+	}
+
+	cmd := exec.Command(lighthousePath,
 		target,
 		"--output=json",
 		"--chrome-flags=--headless",
@@ -65,9 +72,58 @@ func RunLighthouse(target string, lang string) (*FullLighthouseReport, error) {
 		"--quiet",
 	)
 
+	// 捕获 stderr 以获取详细错误信息
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
 	output, err := cmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("lighthouse command failed: %w", err)
+		// 获取 stderr 内容
+		stderrStr := stderr.String()
+		
+		// 检查是否是 Chrome 连接问题
+		if strings.Contains(stderrStr, "Unable to connect to Chrome") ||
+			strings.Contains(stderrStr, "Chrome") && strings.Contains(stderrStr, "not found") {
+			errorMsg := "Lighthouse unable to connect to Chrome/Chromium. Please ensure Chrome/Chromium is installed. " +
+				"Install with: sudo apt-get install -y chromium-browser (Ubuntu/Debian) or sudo yum install -y chromium (CentOS/RHEL). " +
+				"Or set CHROME_PATH environment variable to point to Chrome executable."
+			if stderrStr != "" {
+				errorMsg += fmt.Sprintf(" (stderr: %s)", strings.TrimSpace(stderrStr))
+			}
+			log.Printf("[Lighthouse] %s", errorMsg)
+			return nil, fmt.Errorf(errorMsg)
+		}
+		
+		// 通用错误处理
+		errorMsg := fmt.Sprintf("lighthouse command failed: %v", err)
+		if stderrStr != "" {
+			// 提取关键错误信息（限制长度避免日志过长）
+			errorLines := strings.Split(stderrStr, "\n")
+			keyErrors := []string{}
+			for _, line := range errorLines {
+				line = strings.TrimSpace(line)
+				if line != "" && (strings.Contains(strings.ToLower(line), "error") ||
+					strings.Contains(strings.ToLower(line), "fatal") ||
+					strings.Contains(strings.ToLower(line), "failed")) {
+					keyErrors = append(keyErrors, line)
+					if len(keyErrors) >= 3 { // 最多记录3行关键错误
+						break
+					}
+				}
+			}
+			if len(keyErrors) > 0 {
+				errorMsg += fmt.Sprintf(" (stderr: %s)", strings.Join(keyErrors, "; "))
+			} else {
+				// 如果没有关键错误，记录前200个字符
+				if len(stderrStr) > 200 {
+					errorMsg += fmt.Sprintf(" (stderr: %s...)", stderrStr[:200])
+				} else {
+					errorMsg += fmt.Sprintf(" (stderr: %s)", strings.TrimSpace(stderrStr))
+				}
+			}
+		}
+		log.Printf("[Lighthouse] Command execution failed: %s", errorMsg)
+		return nil, fmt.Errorf(errorMsg)
 	}
 
 	var report FullLighthouseReport

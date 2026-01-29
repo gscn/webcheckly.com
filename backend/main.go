@@ -79,10 +79,18 @@ func main() {
 	}
 
 	// 初始化Stripe（可选，如果未配置则只记录警告）
-	if err := payment.InitStripe(); err != nil {
-		log.Printf("[Main] Warning: Stripe payment is not configured: %v. Payment features will be disabled.", err)
+	// if err := payment.InitStripe(); err != nil {
+	// 	log.Printf("[Main] Warning: Stripe payment is not configured: %v. Payment features will be disabled.", err)
+	// } else {
+	// 	log.Printf("[Main] Stripe payment initialized successfully")
+	// }
+
+	// 验证必需的命令是否可用（非阻塞，只记录警告）
+	if err := services.VerifyCommands(); err != nil {
+		log.Printf("[Main] Warning: Some required commands are not available: %v", err)
+		log.Printf("[Main] Note: This may cause some features to fail. Please ensure katana and lighthouse are installed and in PATH.")
 	} else {
-		log.Printf("[Main] Stripe payment initialized successfully")
+		log.Printf("[Main] All required commands verified successfully")
 	}
 
 	// 初始化PayPal（可选，如果未配置则只记录警告）
@@ -202,6 +210,8 @@ func main() {
 	paymentRoutes := app.Group("/api/payment", middleware.RequireAuth())
 	paymentRoutes.Post("/create-checkout", routes.CreateCheckoutHandler)
 	paymentRoutes.Get("/verify/:orderId", routes.VerifyPaymentHandler)
+	paymentRoutes.Post("/confirm", routes.ConfirmPaymentHandler)
+	paymentRoutes.Get("/verify-session", routes.VerifySessionHandler)
 	app.Post("/api/payment/webhook", routes.WebhookHandler)              // Stripe Webhook不需要认证，使用Stripe签名验证
 	app.Post("/api/payment/paypal-webhook", routes.PayPalWebhookHandler) // PayPal Webhook不需要认证，使用PayPal签名验证
 

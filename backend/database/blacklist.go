@@ -233,7 +233,13 @@ func IsWebsiteBlacklisted(targetURL string) bool {
 	`
 	exactRows, err := DB.Query(query)
 	if err != nil {
-		log.Printf("[IsWebsiteBlacklisted] Error querying exact blacklist: %v", err)
+		// 如果是权限错误，只记录警告，不阻塞流程
+		errStr := err.Error()
+		if strings.Contains(errStr, "permission denied") {
+			log.Printf("[IsWebsiteBlacklisted] Warning: Permission denied for website_blacklist table (continuing without blacklist check): %v", err)
+		} else {
+			log.Printf("[IsWebsiteBlacklisted] Error querying exact blacklist: %v", err)
+		}
 	} else {
 		defer exactRows.Close()
 		for exactRows.Next() {
@@ -281,6 +287,12 @@ func IsWebsiteBlacklisted(targetURL string) bool {
 	`
 	rows, err := DB.Query(query)
 	if err != nil {
+		// 如果是权限错误，只记录警告，不阻塞流程
+		errStr := err.Error()
+		if strings.Contains(errStr, "permission denied") {
+			log.Printf("[IsWebsiteBlacklisted] Warning: Permission denied for website_blacklist table (continuing without blacklist check): %v", err)
+			return false // 权限不足时，默认不阻止访问
+		}
 		log.Printf("[IsWebsiteBlacklisted] Error querying domain blacklist: %v", err)
 		return false
 	}
@@ -566,8 +578,14 @@ func IsUserBlacklisted(userID uuid.UUID) bool {
 	var count int
 	err := DB.QueryRow(query, userID).Scan(&count)
 	if err != nil {
-		log.Printf("[IsUserBlacklisted] Error checking user blacklist: %v", err)
-		return false
+		// 如果是权限错误，只记录警告，不阻塞流程
+		errStr := err.Error()
+		if strings.Contains(errStr, "permission denied") {
+			log.Printf("[IsUserBlacklisted] Warning: Permission denied for user_blacklist table (continuing without blacklist check): %v", err)
+		} else {
+			log.Printf("[IsUserBlacklisted] Error checking user blacklist: %v", err)
+		}
+		return false // 权限不足或查询失败时，默认不阻止用户
 	}
 
 	return count > 0

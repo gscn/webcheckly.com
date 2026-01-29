@@ -6,6 +6,7 @@ import (
 	"os"
 	"web-checkly/database"
 	"web-checkly/middleware"
+	"web-checkly/models"
 	"web-checkly/services"
 	"web-checkly/services/payment"
 
@@ -24,6 +25,11 @@ func CreateCheckoutHandler(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid request body",
+		})
+	}
+	if req.OrderID == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "order_id is required",
 		})
 	}
 
@@ -195,7 +201,108 @@ func VerifyPaymentHandler(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"order_id": order.ID,
-		"status":   order.Status,
+		"status":   string(order.Status),
+		"paid_at":  order.PaidAt,
+	})
+}
+
+// ConfirmPaymentHandler 确认支付（PayPal capture）：用户在 success 页回调时触发
+func ConfirmPaymentHandler(c *fiber.Ctx) error {
+	var req struct {
+		OrderID string `json:"order_id"`
+	}
+
+	if err := c.BodyParser(&req); err != nil || req.OrderID == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "order_id is required",
+		})
+	}
+
+	order, err := services.GetOrder(req.OrderID)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Order not found",
+		})
+	}
+
+	userID := middleware.GetUserID(c)
+	if userID == nil || userID.String() != order.UserID {
+		return c.Status(403).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	if order.Status == models.OrderStatusPaid {
+		return c.JSON(fiber.Map{
+			"order_id": order.ID,
+			"status":   string(order.Status),
+			"paid_at":  order.PaidAt,
+		})
+	}
+
+	if order.PaymentMethod != "paypal" || order.PayPalOrderID == nil || *order.PayPalOrderID == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Order is not a PayPal order or missing PayPal order id",
+		})
+	}
+
+	captureID, err := payment.CapturePayPalOrder(*order.PayPalOrderID)
+	if err != nil {
+		log.Printf("[Payment] Failed to capture PayPal order %s: %v", *order.PayPalOrderID, err)
+		return c.Status(502).JSON(fiber.Map{
+			"error": "Failed to capture payment",
+		})
+	}
+
+	if err := services.ProcessPayPalPayment(order.ID, *order.PayPalOrderID, captureID); err != nil {
+		log.Printf("[Payment] Failed to process PayPal payment for order %s: %v", order.ID, err)
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to process payment",
+		})
+	}
+
+	updated, _ := services.GetOrder(order.ID)
+	return c.JSON(fiber.Map{
+		"order_id": updated.ID,
+		"status":   string(updated.Status),
+		"paid_at":  updated.PaidAt,
+	})
+}
+
+// VerifySessionHandler 根据 Stripe Checkout session_id 验证支付并返回订单状态
+func VerifySessionHandler(c *fiber.Ctx) error {
+	sessionID := c.Query("session_id")
+	if sessionID == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "session_id is required",
+		})
+	}
+
+	orderID, err := payment.GetStripeSessionOrderID(sessionID)
+	if err != nil {
+		log.Printf("[Payment] VerifySession failed: %v", err)
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid or expired session",
+		})
+	}
+
+	order, err := services.GetOrder(orderID)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Order not found",
+		})
+	}
+
+	userID := middleware.GetUserID(c)
+	if userID == nil || userID.String() != order.UserID {
+		return c.Status(403).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"order_id": order.ID,
+		"status":   string(order.Status),
 		"paid_at":  order.PaidAt,
 	})
 }
