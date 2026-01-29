@@ -122,11 +122,11 @@ export async function getMonthlyUsage(month?: string): Promise<SubscriptionUsage
   }
 }
 
-// 创建订阅（默认使用PayPal）
+// 创建订阅（基础/专业/高级，按月扣款）。仅用于订阅流程，不与购买积分混用。
 export async function createSubscription(
   planType: string,
-  paymentMethod: 'paypal' = 'paypal'
-): Promise<{ subscription_id?: string; url: string; provider: 'paypal' }> {
+  paymentMethod: 'paypal' | 'stripe' = 'paypal'
+): Promise<{ subscription_id?: string; session_id?: string; url: string; provider: 'paypal' | 'stripe' }> {
   const body: any = { plan_type: planType, payment_method: paymentMethod };
 
   const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/subscribe`, {
@@ -138,8 +138,8 @@ export async function createSubscription(
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to create subscription');
+    const error = await response.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(error.error || error.message || 'Failed to create subscription');
   }
 
   return response.json();
@@ -152,8 +152,8 @@ export async function cancelSubscription(): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to cancel subscription');
+    const error = await response.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(error.error || error.message || 'Failed to cancel subscription');
   }
 }
 

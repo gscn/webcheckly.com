@@ -39,8 +39,8 @@ export async function createOrder(
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to create order');
+    const error = await response.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(error.error || error.message || 'Failed to create order');
   }
 
   return response.json();
@@ -73,16 +73,16 @@ export async function cancelOrder(orderId: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to cancel order');
+    const error = await response.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(error.error || error.message || 'Failed to cancel order');
   }
 }
 
-// 创建支付会话（默认使用PayPal）
+// 创建支付会话（仅用于购买积分等一次性支付，不与订阅混用）
 export async function createCheckoutSession(
   orderId: string,
-  paymentMethod: 'paypal' = 'paypal'
-): Promise<{ order_id?: string; url: string; provider: 'paypal' }> {
+  paymentMethod: 'paypal' | 'stripe' = 'paypal'
+): Promise<{ order_id?: string; session_id?: string; url: string; provider: 'paypal' | 'stripe' }> {
   const body: any = { order_id: orderId, payment_method: paymentMethod };
 
   const response = await authenticatedFetch(`${API_BASE_URL}/api/payment/create-checkout`, {
@@ -94,8 +94,8 @@ export async function createCheckoutSession(
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to create checkout session');
+    const error = await response.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(error.error || error.message || 'Failed to create checkout session');
   }
 
   return response.json();

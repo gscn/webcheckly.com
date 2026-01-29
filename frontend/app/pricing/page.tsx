@@ -62,9 +62,9 @@ export default function PricingPage() {
     setSubscribing(planType);
     setError(null);
     try {
+      // 订阅流程：仅用 createSubscription，回跳 /subscription/success 或 /subscription/cancel
       const result = await createSubscription(planType, paymentMethod);
-      // 使用PayPal支付
-      redirectToPayment(result.url, 'paypal');
+      redirectToPayment(result.url, paymentMethod);
     } catch (err: any) {
       console.error('Failed to subscribe:', err);
       setError(err.message || t('pricing.errors.subscribeFailed'));
@@ -86,14 +86,10 @@ export default function PricingPage() {
     setPurchasingCredits(true);
     setError(null);
     try {
-      // 创建订单（金额为美元，1美元=100积分）
+      // 购买积分流程：仅用 orders/create + create-checkout，回跳 /payment/success 或 /payment/cancel
       const order = await createOrder('credits_purchase', undefined, creditAmountUSD, paymentMethod);
-      
-      // 创建支付会话
       const result = await createCheckoutSession(order.id, paymentMethod);
-      
-      // 跳转到PayPal支付页面
-      redirectToPayment(result.url, 'paypal');
+      redirectToPayment(result.url, paymentMethod);
     } catch (err: any) {
       console.error('Failed to purchase credits:', err);
       setError(err.message || t('pricing.errors.purchaseFailed'));

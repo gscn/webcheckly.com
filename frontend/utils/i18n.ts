@@ -598,6 +598,33 @@ export const translations = {
         credits: "积分",
       },
     },
+    // 支付成功/取消页面
+    payment: {
+      success: {
+        title: "支付成功",
+        verifyFailedTitle: "验证失败",
+        subtitle: "感谢您的支付，订单已确认",
+        backToPricing: "返回订阅管理",
+        backToDashboard: "前往用户中心",
+        verifying: "正在确认支付...",
+        error: "验证支付失败，请稍后在用户中心查看订单状态",
+      },
+      cancel: {
+        title: "支付已取消",
+        subtitle: "您已取消本次支付，订单未完成",
+        backToPricing: "返回订阅管理",
+        retry: "重新支付",
+      },
+      subscription: {
+        successTitle: "订阅成功",
+        successSubtitle: "感谢您的订阅，请前往用户中心查看套餐状态",
+        successActivated: "订阅已激活",
+        successActivatedSubtitle: "您已成功订阅 {plan}，请前往用户中心查看。",
+        checkingStatus: "正在确认订阅状态...",
+        cancelTitle: "订阅已取消",
+        cancelSubtitle: "您已取消订阅流程，未完成订阅",
+      },
+    },
     // API管理页面
     api: {
       title: "API管理",
@@ -2129,6 +2156,33 @@ export const translations = {
         creditsCost: "Credits Cost",
         free: "Free",
         credits: "credits",
+      },
+    },
+    // Payment success / cancel pages
+    payment: {
+      success: {
+        title: "Payment Successful",
+        verifyFailedTitle: "Verification Failed",
+        subtitle: "Thank you for your payment. Your order has been confirmed.",
+        backToPricing: "Back to Subscription",
+        backToDashboard: "Go to Dashboard",
+        verifying: "Verifying payment...",
+        error: "Failed to verify payment. Please check your order status in Dashboard later.",
+      },
+      cancel: {
+        title: "Payment Cancelled",
+        subtitle: "You have cancelled this payment. The order was not completed.",
+        backToPricing: "Back to Subscription",
+        retry: "Retry Payment",
+      },
+      subscription: {
+        successTitle: "Subscription Successful",
+        successSubtitle: "Thank you for subscribing. Check your plan status in Dashboard.",
+        successActivated: "Subscription Activated",
+        successActivatedSubtitle: "You have successfully subscribed to {plan}. Check your dashboard.",
+        checkingStatus: "Checking subscription status...",
+        cancelTitle: "Subscription Cancelled",
+        cancelSubtitle: "You have cancelled the subscription flow. No subscription was created.",
       },
     },
     // API Management page
